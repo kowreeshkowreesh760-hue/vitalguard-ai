@@ -163,6 +163,7 @@ function loginWithPreset(presetKey) {
     .catch(err => {
         console.warn('Backend login request failed, falling back to local session:', err);
         const fallbackUsers = {
+            'kowreesh': { username: 'kowreesh', name: 'Dr. Kowreesh, MD', role: 'Lead Clinical Director', department: 'Critical Care & Telemetry Systems', station: 'Main Command Center - Bay 1', avatar: 'KW' },
             'dr_arun': { username: 'dr_arun', name: 'Dr. Arun Kumar, MD', role: 'Cardiology Lead', department: 'Cardiology & Intensive Care', station: 'Cardiac ICU Station 1', avatar: 'AK' },
             'nurse_priya': { username: 'nurse_priya', name: 'Nurse Priya, RN', role: 'ICU Specialist', department: 'Critical Care Unit (CCU)', station: 'Central Monitoring Desk 2', avatar: 'PR' },
             'dr_rajesh': { username: 'dr_rajesh', name: 'Dr. Rajesh V, MD', role: 'Emergency Care', department: 'Trauma & Emergency Care', station: 'ER Trauma Bay 3', avatar: 'RV' }

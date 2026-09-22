@@ -17,6 +17,15 @@ DB_PATH = os.path.join(os.path.dirname(__file__), 'database.db')
 
 # Verified Demo Clinicians (Zero Paid Auth / Hackathon Ready)
 CLINICIANS = {
+    'kowreesh': {
+        'username': 'kowreesh',
+        'password': 'kowreesh18',
+        'name': 'Dr. Kowreesh, MD',
+        'role': 'Lead Clinical Director',
+        'department': 'Critical Care & Telemetry Systems',
+        'station': 'Main Command Center - Bay 1',
+        'avatar': 'KW'
+    },
     'dr_arun': {
         'username': 'dr_arun',
         'password': 'password123',
