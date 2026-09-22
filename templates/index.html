@@ -42,8 +42,107 @@
         <button class="toast-close" id="toastCloseBtn" aria-label="Close notification">&times;</button>
     </div>
 
+    <!-- Clinical Authentication & Telemetry Gateway Screen -->
+    <div class="login-gateway-wrapper" id="clinicalLoginScreen">
+        <div class="login-backdrop-glow"></div>
+        <div class="login-container">
+            <!-- Brand Badge -->
+            <div class="login-brand-header">
+                <div class="login-brand-badge">
+                    <div class="brand-pulse"></div>
+                    <span class="login-brand-icon">🛡️</span>
+                </div>
+                <div class="login-brand-titles">
+                    <h1 class="login-app-title">VitalGuard <span class="brand-ai">AI</span></h1>
+                    <span class="login-app-tag">Clinical Telemetry Gateway &amp; Early-Warning System</span>
+                </div>
+            </div>
+
+            <!-- Login Card -->
+            <div class="login-card card-glass">
+                <div class="login-card-header">
+                    <div class="login-badge-pill">
+                        <span class="status-dot-active"></span>
+                        <span>CLINICIAN SECURE ACCESS</span>
+                    </div>
+                    <h2 class="login-heading">Hospital Staff Sign-In</h2>
+                    <p class="login-subtext">Authenticate to monitor real-time physiological telemetry and EHR records.</p>
+                </div>
+
+                <!-- 1-Click Fast Hackathon Demo Presets -->
+                <div class="demo-logins-section">
+                    <div class="demo-section-label">
+                        <span>⚡ 1-Click Demo Login (Hackathon Presets):</span>
+                    </div>
+                    <div class="demo-roles-grid">
+                        <button type="button" class="btn-demo-role" data-preset="dr_arun">
+                            <span class="role-icon">🩺</span>
+                            <div class="role-meta">
+                                <strong class="role-name">Dr. Arun Kumar, MD</strong>
+                                <span class="role-dept">Cardiology Lead</span>
+                            </div>
+                        </button>
+                        <button type="button" class="btn-demo-role" data-preset="nurse_priya">
+                            <span class="role-icon">👩‍⚕️</span>
+                            <div class="role-meta">
+                                <strong class="role-name">Nurse Priya, RN</strong>
+                                <span class="role-dept">ICU Specialist</span>
+                            </div>
+                        </button>
+                        <button type="button" class="btn-demo-role" data-preset="dr_rajesh">
+                            <span class="role-icon">🚨</span>
+                            <div class="role-meta">
+                                <strong class="role-name">Dr. Rajesh V, MD</strong>
+                                <span class="role-dept">Emergency Care</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="login-divider-or">
+                    <span>OR ENTER CLINICIAN CREDENTIALS</span>
+                </div>
+
+                <!-- Custom Credentials Form -->
+                <form id="clinicalLoginForm" class="login-form" novalidate>
+                    <div class="form-group">
+                        <label for="loginUsername" class="form-label">Clinician Username / ID</label>
+                        <div class="input-with-icon">
+                            <span class="input-prefix-icon">👤</span>
+                            <input type="text" id="loginUsername" class="form-input" placeholder="e.g. dr_arun or nurse_priya" autocomplete="username" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row-between">
+                            <label for="loginPassword" class="form-label">Security Password</label>
+                            <span class="demo-pwd-hint">Default: <code>password123</code></span>
+                        </div>
+                        <div class="input-with-icon">
+                            <span class="input-prefix-icon">🔒</span>
+                            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••••••" autocomplete="current-password" required>
+                            <button type="button" class="btn-toggle-pwd" id="btnToggleLoginPwd" title="Show/Hide Password">👁️</button>
+                        </div>
+                    </div>
+
+                    <div id="loginErrorMessage" class="form-error-msg hidden"></div>
+
+                    <button type="submit" class="btn-login-submit" id="btnLoginSubmit">
+                        <span class="btn-login-icon">🔐</span>
+                        <span>Sign In to Clinical Station</span>
+                    </button>
+                </form>
+
+                <div class="login-footer-disclaimer">
+                    <span class="disc-icon">🛡️</span>
+                    <span>VitalCare Hospital Telemetry Network • Zero-Cost Hackathon Prototype Simulation</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Application Shell -->
-    <div class="app-layout">
+    <div class="app-layout hidden" id="appLayout">
 
         <!-- Sidebar Navigation -->
         <aside class="app-sidebar" id="appSidebar">
@@ -109,6 +208,18 @@
             </nav>
 
             <div class="sidebar-footer">
+                <!-- Logged-in Clinician Profile Card -->
+                <div class="sidebar-user-card" id="sidebarUserCard">
+                    <div class="sidebar-user-avatar" id="sidebarUserAvatar">AK</div>
+                    <div class="sidebar-user-info">
+                        <strong class="sidebar-user-name" id="sidebarUserName">Dr. Arun Kumar, MD</strong>
+                        <span class="sidebar-user-dept" id="sidebarUserDept">Cardiology Lead</span>
+                    </div>
+                    <button class="btn-sidebar-logout" id="btnLogoutSidebar" title="Sign Out of Station">
+                        <span>🚪</span>
+                    </button>
+                </div>
+
                 <button class="btn-info-modal" id="btnOpenArchitecture" title="System Architecture & Scope">
                     <span class="info-icon">ℹ️</span>
                     <span>Architecture & Scope</span>
@@ -168,6 +279,18 @@
                     <div class="live-clock" id="liveClockWrap">
                         <span class="clock-time" id="clockTime">--:--:--</span>
                         <span class="clock-tz">LOCAL</span>
+                    </div>
+
+                    <!-- Clinician Identity Pill & Logout in Header -->
+                    <div class="header-clinician-pill" id="headerClinicianPill">
+                        <span class="clinician-avatar" id="headerUserAvatar">AK</span>
+                        <div class="clinician-text">
+                            <span class="clinician-name" id="headerUserName">Dr. Arun Kumar</span>
+                            <span class="clinician-badge" id="headerUserRole">Cardiologist</span>
+                        </div>
+                        <button class="btn-header-logout" id="btnLogoutHeader" title="Sign Out Clinician">
+                            <span>🚪</span>
+                        </button>
                     </div>
                 </div>
             </header>

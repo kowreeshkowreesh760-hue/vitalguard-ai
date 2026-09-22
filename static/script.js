@@ -9,11 +9,13 @@
 // ====================================================================
 
 const AppState = {
+    currentUser: null,
+    isAuthenticated: false,
     currentPatientId: 'VG-1024',
     patients: {},
     currentPatient: null,
     simMode: 'normal',
-    isStreaming: true,
+    isStreaming: false,
     intervalMs: 2500,
     timerId: null,
     audioEnabled: true,
@@ -38,6 +40,8 @@ const AppState = {
     lastAnalysis: null
 };
 
+let isAppInitialized = false;
+
 // ====================================================================
 // INITIALIZATION
 // ====================================================================
@@ -46,12 +50,209 @@ document.addEventListener('DOMContentLoaded', () => {
     initClock();
     initCharts();
     initEventListeners();
-    fetchPatients(() => {
-        loadPatientData(AppState.currentPatientId);
-        loadEhrData(AppState.currentPatientId);
-        startSimulation();
-    });
+    checkAuthStatus();
 });
+
+// ====================================================================
+// CLINICIAN AUTHENTICATION & SESSION MANAGEMENT
+// ====================================================================
+
+function checkAuthStatus() {
+    fetch('/api/auth/me')
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.authenticated && data.user) {
+                AppState.currentUser = data.user;
+                AppState.isAuthenticated = true;
+                updateClinicianDisplay(data.user);
+                showDashboard();
+                initAppWithSession();
+            } else {
+                AppState.currentUser = null;
+                AppState.isAuthenticated = false;
+                showLoginScreen();
+            }
+        })
+        .catch(err => {
+            console.warn('Auth check error, defaulting to login gateway:', err);
+            showLoginScreen();
+        });
+}
+
+function showLoginScreen() {
+    const loginScreen = document.getElementById('clinicalLoginScreen');
+    const appLayout = document.getElementById('appLayout');
+    if (loginScreen) loginScreen.classList.remove('hidden');
+    if (appLayout) appLayout.classList.add('hidden');
+}
+
+function showDashboard() {
+    const loginScreen = document.getElementById('clinicalLoginScreen');
+    const appLayout = document.getElementById('appLayout');
+    if (loginScreen) loginScreen.classList.add('hidden');
+    if (appLayout) appLayout.classList.remove('hidden');
+}
+
+function updateClinicianDisplay(user) {
+    if (!user) return;
+    // Header Clinician Pill
+    const hdrAvatar = document.getElementById('headerUserAvatar');
+    const hdrName = document.getElementById('headerUserName');
+    const hdrRole = document.getElementById('headerUserRole');
+    if (hdrAvatar) hdrAvatar.textContent = user.avatar || 'CL';
+    if (hdrName) hdrName.textContent = user.name || 'Clinician';
+    if (hdrRole) hdrRole.textContent = user.role || 'Hospital Staff';
+
+    // Sidebar User Profile Card
+    const sbarAvatar = document.getElementById('sidebarUserAvatar');
+    const sbarName = document.getElementById('sidebarUserName');
+    const sbarDept = document.getElementById('sidebarUserDept');
+    if (sbarAvatar) sbarAvatar.textContent = user.avatar || 'CL';
+    if (sbarName) sbarName.textContent = user.name || 'Clinician';
+    if (sbarDept) sbarDept.textContent = user.department || user.role || 'Hospital Staff';
+}
+
+function initAppWithSession() {
+    if (!isAppInitialized) {
+        isAppInitialized = true;
+        fetchPatients(() => {
+            loadPatientData(AppState.currentPatientId);
+            loadEhrData(AppState.currentPatientId);
+            startSimulation();
+        });
+    } else {
+        if (!AppState.isStreaming) {
+            startSimulation();
+        }
+    }
+}
+
+function loginWithPreset(presetKey) {
+    const errorEl = document.getElementById('loginErrorMessage');
+    if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.classList.add('hidden');
+    }
+
+    const btns = document.querySelectorAll('.btn-demo-role');
+    btns.forEach(b => b.classList.remove('active'));
+    const activeBtn = document.querySelector(`.btn-demo-role[data-preset="${presetKey}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preset: presetKey })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success' && data.user) {
+            AppState.currentUser = data.user;
+            AppState.isAuthenticated = true;
+            updateClinicianDisplay(data.user);
+            showDashboard();
+            initAppWithSession();
+            showToast('Clinician Signed In', `Authenticated as ${data.user.name} (${data.user.role})`, 'NORMAL');
+        } else {
+            if (errorEl) {
+                errorEl.textContent = data.message || 'Authentication failed.';
+                errorEl.classList.remove('hidden');
+            }
+        }
+    })
+    .catch(err => {
+        console.warn('Backend login request failed, falling back to local session:', err);
+        const fallbackUsers = {
+            'dr_arun': { username: 'dr_arun', name: 'Dr. Arun Kumar, MD', role: 'Cardiology Lead', department: 'Cardiology & Intensive Care', station: 'Cardiac ICU Station 1', avatar: 'AK' },
+            'nurse_priya': { username: 'nurse_priya', name: 'Nurse Priya, RN', role: 'ICU Specialist', department: 'Critical Care Unit (CCU)', station: 'Central Monitoring Desk 2', avatar: 'PR' },
+            'dr_rajesh': { username: 'dr_rajesh', name: 'Dr. Rajesh V, MD', role: 'Emergency Care', department: 'Trauma & Emergency Care', station: 'ER Trauma Bay 3', avatar: 'RV' }
+        };
+        const u = fallbackUsers[presetKey] || fallbackUsers['dr_arun'];
+        AppState.currentUser = u;
+        AppState.isAuthenticated = true;
+        updateClinicianDisplay(u);
+        showDashboard();
+        initAppWithSession();
+        showToast('Clinician Signed In', `Authenticated as ${u.name} (Demo Mode)`, 'NORMAL');
+    });
+}
+
+function handleLoginSubmit(e) {
+    if (e) e.preventDefault();
+    const errorEl = document.getElementById('loginErrorMessage');
+    const usernameInput = document.getElementById('loginUsername');
+    const passwordInput = document.getElementById('loginPassword');
+    const submitBtn = document.getElementById('btnLoginSubmit');
+
+    const username = usernameInput ? usernameInput.value.trim() : '';
+    const password = passwordInput ? passwordInput.value : '';
+
+    if (!username || !password) {
+        if (errorEl) {
+            errorEl.textContent = 'Please enter both clinician ID/username and password.';
+            errorEl.classList.remove('hidden');
+        }
+        return;
+    }
+
+    if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.classList.add('hidden');
+    }
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>⏳</span><span>Verifying Credentials…</span>';
+    }
+
+    fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-login-icon">🔐</span><span>Sign In to Clinical Station</span>';
+        }
+        if (data.status === 'success' && data.user) {
+            AppState.currentUser = data.user;
+            AppState.isAuthenticated = true;
+            updateClinicianDisplay(data.user);
+            showDashboard();
+            initAppWithSession();
+            showToast('Clinician Signed In', `Authenticated as ${data.user.name}`, 'NORMAL');
+            if (passwordInput) passwordInput.value = '';
+        } else {
+            if (errorEl) {
+                errorEl.textContent = data.message || 'Invalid clinician credentials.';
+                errorEl.classList.remove('hidden');
+            }
+        }
+    })
+    .catch(err => {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-login-icon">🔐</span><span>Sign In to Clinical Station</span>';
+        }
+        if (errorEl) {
+            errorEl.textContent = 'Server connection error during authentication.';
+            errorEl.classList.remove('hidden');
+        }
+    });
+}
+
+function handleLogout() {
+    pauseSimulation();
+    fetch('/api/auth/logout', { method: 'POST' })
+        .then(r => r.json())
+        .finally(() => {
+            AppState.currentUser = null;
+            AppState.isAuthenticated = false;
+            showLoginScreen();
+            showToast('Clinician Signed Out', 'Clinical terminal session safely closed.', 'NORMAL');
+        });
+}
 
 // ====================================================================
 // DIGITAL CLOCK
@@ -406,6 +607,47 @@ function initEventListeners() {
     const btnConfirmDel = document.getElementById('btnConfirmDeletePatient');
     if (btnConfirmDel) {
         btnConfirmDel.addEventListener('click', handleConfirmDeletePatient);
+    }
+
+    // ---- 21. Clinician Authentication & Demo Roles ----
+    // 1-Click Fast Hackathon Demo Login Presets
+    document.querySelectorAll('.btn-demo-role').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const preset = btn.getAttribute('data-preset');
+            if (preset) loginWithPreset(preset);
+        });
+    });
+
+    // Custom Credentials Form Submit
+    const loginForm = document.getElementById('clinicalLoginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLoginSubmit);
+    }
+
+    // Toggle Password Visibility in Login Form
+    const btnToggleLoginPwd = document.getElementById('btnToggleLoginPwd');
+    if (btnToggleLoginPwd) {
+        btnToggleLoginPwd.addEventListener('click', () => {
+            const pwdInput = document.getElementById('loginPassword');
+            if (!pwdInput) return;
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                btnToggleLoginPwd.textContent = '🙈';
+            } else {
+                pwdInput.type = 'password';
+                btnToggleLoginPwd.textContent = '👁️';
+            }
+        });
+    }
+
+    // Logout Buttons (Header Pill & Sidebar Card)
+    const btnLogoutHeader = document.getElementById('btnLogoutHeader');
+    if (btnLogoutHeader) {
+        btnLogoutHeader.addEventListener('click', handleLogout);
+    }
+    const btnLogoutSidebar = document.getElementById('btnLogoutSidebar');
+    if (btnLogoutSidebar) {
+        btnLogoutSidebar.addEventListener('click', handleLogout);
     }
 }
 

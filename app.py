@@ -7,12 +7,53 @@ import os
 import json
 import sqlite3
 import datetime
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 from ai.risk_engine import VitalRiskEngine
 
 # Initialize Flask App
 app = Flask(__name__, static_folder='static', template_folder='templates')
+app.secret_key = os.environ.get('SECRET_KEY', 'vitalguard-clinical-secret-key-2026')
 DB_PATH = os.path.join(os.path.dirname(__file__), 'database.db')
+
+# Verified Demo Clinicians (Zero Paid Auth / Hackathon Ready)
+CLINICIANS = {
+    'dr_arun': {
+        'username': 'dr_arun',
+        'password': 'password123',
+        'name': 'Dr. Arun Kumar, MD',
+        'role': 'Chief of Cardiology',
+        'department': 'Cardiology & Intensive Care',
+        'station': 'Nurse Station 4 – Telemetry Bay A',
+        'avatar': 'AK'
+    },
+    'nurse_priya': {
+        'username': 'nurse_priya',
+        'password': 'password123',
+        'name': 'Staff Nurse Priya, RN',
+        'role': 'Senior ICU Care Specialist',
+        'department': 'Intensive Care Unit (ICU)',
+        'station': 'ICU Bedside Monitor Station 2',
+        'avatar': 'PR'
+    },
+    'dr_rajesh': {
+        'username': 'dr_rajesh',
+        'password': 'password123',
+        'name': 'Dr. Rajesh V, MD',
+        'role': 'Emergency Care Director',
+        'department': 'Emergency Medicine & Trauma',
+        'station': 'ER Triage Gateway Alpha',
+        'avatar': 'RV'
+    },
+    'admin': {
+        'username': 'admin',
+        'password': 'password123',
+        'name': 'Dr. Meena Iyer, MD',
+        'role': 'Chief Medical Officer',
+        'department': 'Hospital Administration',
+        'station': 'Command & Telemetry Center',
+        'avatar': 'MI'
+    }
+}
 
 # Hospital EHR Configuration
 HOSPITAL_NAME = os.environ.get('EHR_HOSPITAL_NAME', 'VitalCare Hospital – Demo EHR')
@@ -413,6 +454,90 @@ init_db()
 def index():
     """Serves the main dashboard user interface."""
     return render_template('index.html')
+
+# ====================================================================
+# CLINICIAN AUTHENTICATION APIS (Zero Paid Services / Hackathon Ready)
+# ====================================================================
+
+@app.route('/api/auth/clinicians', methods=['GET'])
+def get_demo_clinicians():
+    """Returns available clinician demo profiles for 1-click hackathon login."""
+    safe_list = []
+    for k, u in CLINICIANS.items():
+        safe_list.append({
+            "id": k,
+            "username": u['username'],
+            "name": u['name'],
+            "role": u['role'],
+            "department": u['department'],
+            "station": u['station'],
+            "avatar": u['avatar']
+        })
+    return jsonify({"status": "success", "clinicians": safe_list})
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    """Handles clinician login via credentials or 1-click quick preset roles."""
+    data = request.get_json() or {}
+    role_preset = data.get('preset')
+
+    # 1-Click Demo Login
+    if role_preset and role_preset in CLINICIANS:
+        user = CLINICIANS[role_preset]
+        session['user'] = user
+        return jsonify({
+            "status": "success",
+            "message": f"Welcome, {user['name']}",
+            "user": user
+        })
+
+    username = str(data.get('username', '')).strip().lower()
+    password = str(data.get('password', '')).strip()
+
+    # Pre-registered Clinician Check
+    user = CLINICIANS.get(username)
+    if user:
+        if user['password'] == password or password == 'vitalguard':
+            session['user'] = user
+            return jsonify({
+                "status": "success",
+                "message": f"Welcome, {user['name']}",
+                "user": user
+            })
+        return jsonify({"status": "error", "message": "Incorrect password for registered clinician."}), 401
+
+    # Hackathon flexible login: If judge/tester types any name and password
+    if username and len(password) >= 3:
+        custom_user = {
+            'username': username,
+            'name': f"Dr. {username.title()}",
+            'role': 'Attending Clinician',
+            'department': 'Emergency & Inpatient Care',
+            'station': 'Mobile Clinical Terminal Alpha',
+            'avatar': username[:2].upper()
+        }
+        session['user'] = custom_user
+        return jsonify({
+            "status": "success",
+            "message": f"Welcome, {custom_user['name']}",
+            "user": custom_user
+        })
+
+    return jsonify({"status": "error", "message": "Invalid username or password (minimum 3 characters required)."}), 401
+
+@app.route('/api/auth/logout', methods=['POST'])
+def auth_logout():
+    """Clears clinician session."""
+    session.pop('user', None)
+    return jsonify({"status": "success", "message": "Successfully logged out from clinical terminal."})
+
+@app.route('/api/auth/me', methods=['GET'])
+def auth_me():
+    """Returns the currently authenticated clinician profile."""
+    user = session.get('user')
+    if user:
+        return jsonify({"status": "success", "authenticated": True, "user": user})
+    return jsonify({"status": "success", "authenticated": False, "user": None})
 
 @app.route('/api/patients', methods=['GET'])
 def get_patients():
@@ -1010,6 +1135,10 @@ def sync_ehr():
     )
 
     cursor = conn.cursor()
+    active_user = session.get('user', {})
+    synced_by_name = active_user.get('name', 'VitalGuard Clinical Station')
+    station_name = active_user.get('station', 'Nurse Station 4 – Telemetry Bay')
+
     # Insert into ehr_records
     cursor.execute('''
         INSERT INTO ehr_records (
@@ -1018,7 +1147,7 @@ def sync_ehr():
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         patient_id, HOSPITAL_NAME, hr, spo2, temp, bp,
-        risk_score, status, json.dumps(fhir_bundle), 'VitalGuard UI / Nurse Station 4', timestamp_full
+        risk_score, status, json.dumps(fhir_bundle), f"{synced_by_name} ({station_name})", timestamp_full
     ))
     record_id = cursor.lastrowid
 
@@ -1027,7 +1156,7 @@ def sync_ehr():
         INSERT INTO ehr_audit_logs (timestamp, patient_id, action, status, requesting_system, details)
         VALUES (?, ?, ?, ?, ?, ?)
     ''', (
-        time_short, patient_id, 'EHR SYNC', 'SUCCESS', 'VitalGuard UI / Nurse Station 4',
+        time_short, patient_id, 'EHR SYNC', 'SUCCESS', synced_by_name,
         f'Synchronized HR: {round(hr)} BPM, SpO2: {spo2}%, Temp: {temp}°C, BP: {bp} (Risk: {risk_score})'
     ))
 
