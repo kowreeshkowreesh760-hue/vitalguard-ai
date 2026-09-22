@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalGuard AI – Real-Time Patient Vital Monitoring & Early-Warning System</title>
+    <meta name="description" content="AI-Powered Real-Time Patient Vital Monitoring and Early-Warning System for 24-hour hackathons. Explainable risk engine, personalized baselines, and multi-vital correlation.">
+    
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Offline Chart.js with CDN fallback -->
+    <script src="/static/vendor/chart.umd.min.js"></script>
+    <script>
+        // Fallback to CDN if local bundle fails
+        if (typeof Chart === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');
+        }
+    </script>
+</head>
+<body class="theme-dark">
+
+    <!-- Top Notification Banner for Alerts -->
+    <div id="alertToast" class="alert-toast hidden" role="alert">
+        <div class="toast-content">
+            <span class="toast-icon" id="toastIcon">⚠️</span>
+            <div class="toast-body">
+                <div class="toast-title" id="toastTitle">System Warning</div>
+                <div class="toast-message" id="toastMessage">Abnormal physiological drift detected.</div>
+            </div>
+        </div>
+        <button class="toast-close" id="toastCloseBtn" aria-label="Close notification">&times;</button>
+    </div>
+
+    <!-- Application Shell -->
+    <div class="app-layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar" id="appSidebar">
+            <div class="sidebar-header">
+                <div class="brand-badge">
+                    <div class="brand-pulse"></div>
+                    <div class="brand-icon">🛡️</div>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-title">VitalGuard <span class="brand-ai">AI</span></h1>
+                    <span class="brand-subtitle">Telemetry Intelligence</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Main Navigation">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-section="section-dashboard" id="navDashboard">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-label">Dashboard</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-section="section-patients" id="navPatients">
+                            <span class="nav-icon">👥</span>
+                            <span class="nav-label">Patients</span>
+                            <span class="nav-badge" id="patientCountBadge">3</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-section="section-monitoring" id="navMonitoring">
+                            <span class="nav-icon">📡</span>
+                            <span class="nav-label">Live Monitoring</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-section="section-history" id="navHistory">
+                            <span class="nav-icon">📜</span>
+                            <span class="nav-label">Vital History</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-section="section-analysis" id="navAnalysis">
+                            <span class="nav-icon">🤖</span>
+                            <span class="nav-label">AI Analysis</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-section="section-alerts" id="navAlerts">
+                            <span class="nav-icon">🚨</span>
+                            <span class="nav-label">Alerts</span>
+                            <span class="nav-badge alert-count-badge" id="alertCountBadge">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-section="section-ehr" id="navEhr">
+                            <span class="nav-icon">🏥</span>
+                            <span class="nav-label">Hospital EHR</span>
+                            <span class="nav-badge ehr-status-badge" id="ehrNavBadge">Connected</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-info-modal" id="btnOpenArchitecture" title="System Architecture & Scope">
+                    <span class="info-icon">ℹ️</span>
+                    <span>Architecture & Scope</span>
+                </button>
+                <div class="disclaimer-chip">
+                    <span class="chip-dot"></span>
+                    <span>Hackathon Prototype</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+
+            <!-- Top Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Navigation">☰</button>
+                    <div class="header-title-wrap">
+                        <span class="header-tag">Real-Time Patient Monitoring</span>
+                        <h2 class="header-headline" id="pageTitle">Physiological Telemetry Overview</h2>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <!-- Quick Patient Switcher -->
+                    <div class="header-patient-picker">
+                        <label for="quickPatientSelect" class="sr-only">Select Patient</label>
+                        <span class="picker-label">Active Patient:</span>
+                        <select id="quickPatientSelect" class="patient-select-dropdown">
+                            <option value="VG-1024">John Anderson (VG-1024)</option>
+                            <option value="VG-1025">Sarah Williams (VG-1025)</option>
+                            <option value="VG-1026">David Kumar (VG-1026)</option>
+                        </select>
+                    </div>
+
+                    <!-- Quick Add Patient Button in Header -->
+                    <button class="btn btn-sm btn-action btn-header-add-patient" id="btnHeaderAddPatient" title="Register New Patient">
+                        <span>➕</span>
+                        <span>Add Patient</span>
+                    </button>
+
+                    <!-- Audio Alarm Chime Toggle -->
+                    <button class="icon-button" id="btnAudioToggle" title="Toggle Alarm Sound" aria-label="Toggle Alarm Sound">
+                        <span id="audioIcon">🔊</span>
+                    </button>
+
+                    <!-- System Online Status Pill -->
+                    <div class="status-pill status-online" id="systemStatusPill">
+                        <span class="pulse-indicator"></span>
+                        <span class="status-text">System Online</span>
+                    </div>
+
+                    <!-- Live Digital Clock -->
+                    <div class="live-clock" id="liveClockWrap">
+                        <span class="clock-time" id="clockTime">--:--:--</span>
+                        <span class="clock-tz">LOCAL</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Offline Banner (shown if backend disconnects) -->
+            <div id="offlineNotice" class="offline-notice hidden">
+                ⚠️ Backend connection unavailable. Running local browser simulation mode.
+            </div>
+
+            <!-- Content Area Container -->
+            <main class="app-content">
+
+                <!-- ============================================== -->
+                <!-- SECTION: MAIN DASHBOARD -->
+                <!-- ============================================== -->
+                <div class="view-section active" id="section-dashboard">
+
+                    <!-- Simulation Control Bar -->
+                    <section class="simulation-controller card-glass" aria-label="Simulation Controls">
+                        <div class="sim-header">
+                            <div class="sim-title-group">
+                                <span class="sim-tag">HACKATHON TELEMETRY CONTROLS</span>
+                                <h3 class="sim-title">Physiological State Simulator</h3>
+                            </div>
+                            <div class="sim-indicator-wrap">
+                                <span class="sim-mode-label">Current State:</span>
+                                <span class="mode-badge badge-normal" id="currentSimBadge">🟢 NORMAL</span>
+                            </div>
+                        </div>
+
+                        <div class="sim-buttons-row">
+                            <button class="btn-sim btn-sim-normal active" id="btnSimNormal" data-mode="normal">
+                                <span class="btn-dot dot-green"></span>
+                                <span>Simulate Normal</span>
+                            </button>
+                            <button class="btn-sim btn-sim-warning" id="btnSimWarning" data-mode="warning">
+                                <span class="btn-dot dot-yellow"></span>
+                                <span>Simulate Warning</span>
+                            </button>
+                            <button class="btn-sim btn-sim-critical" id="btnSimCritical" data-mode="critical">
+                                <span class="btn-dot dot-red"></span>
+                                <span>Simulate Critical</span>
+                            </button>
+                            <div class="sim-divider"></div>
+                            <button class="btn-action" id="btnPauseResume" title="Pause or resume live streaming">
+                                <span id="pauseIcon">⏸</span>
+                                <span id="pauseText">Pause</span>
+                            </button>
+                            <button class="btn-action btn-reset" id="btnReset" title="Reset vitals to baseline">
+                                <span>🔄</span>
+                                <span>Reset</span>
+                            </button>
+                            <div class="sim-speed-wrap">
+                                <label for="simSpeedSelect" class="speed-label">Speed:</label>
+                                <select id="simSpeedSelect" class="sim-select">
+                                    <option value="2500">2.5s (Real-time)</option>
+                                    <option value="1200">1.2s (Fast Demo)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Active Patient Demographic Banner -->
+                    <section class="patient-banner card-glass" aria-label="Patient Profile">
+                        <div class="patient-avatar-col">
+                            <div class="patient-avatar" id="patientAvatar">JA</div>
+                            <div class="avatar-meta">
+                                <h3 class="patient-name" id="patientNameDisplay">John Anderson</h3>
+                                <div class="patient-identifiers">
+                                    <span class="id-pill" id="patientIdDisplay">VG-1024</span>
+                                    <span class="meta-sep">•</span>
+                                    <span id="patientAgeDisplay">45 yrs</span>
+                                    <span class="meta-sep">•</span>
+                                    <span id="patientGenderDisplay">Male</span>
+                                    <span class="meta-sep">•</span>
+                                    <button class="btn-banner-action" id="btnEditActivePatient" title="Edit Current Patient Details &amp; Baselines">
+                                        <span>✏️</span> Edit
+                                    </button>
+                                    <button class="btn-banner-action btn-banner-danger" id="btnDeleteActivePatient" title="Delete Current Patient">
+                                        <span>🗑️</span> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="patient-baseline-col">
+                            <div class="baseline-header">
+                                <span class="baseline-icon">🎯</span>
+                                <span class="baseline-title">Personalized Physiological Baseline</span>
+                                <span class="ai-active-pill">AI Baseline Active</span>
+                            </div>
+                            <p class="baseline-subtext" id="baselineSubtext">
+                                AI is comparing current readings with the patient's personal baseline.
+                            </p>
+                            <div class="baseline-chips" id="baselineChips">
+                                <span class="chip" id="chipHr">HR: 70–85 BPM</span>
+                                <span class="chip" id="chipSpo2">SpO2: 96–99%</span>
+                                <span class="chip" id="chipTemp">Temp: 36.5–37.2°C</span>
+                                <span class="chip" id="chipBp">BP: 115–125/75–82</span>
+                            </div>
+                        </div>
+
+                        <div class="patient-status-col">
+                            <div class="status-box">
+                                <span class="status-caption">Monitoring Status</span>
+                                <div class="status-value-row">
+                                    <span class="live-beacon"></span>
+                                    <span class="status-state" id="monitoringStateText">STREAMING LIVE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Telemetry Cards Grid (4 Core Parameters) -->
+                    <section class="vitals-grid" aria-label="Live Vital Parameters">
+
+                        <!-- 1. Heart Rate -->
+                        <article class="vital-card card-glass" id="cardHeartRate">
+                            <div class="card-top">
+                                <div class="vital-icon-title">
+                                    <span class="vital-glyph glyph-hr">❤️</span>
+                                    <h4 class="vital-title">Heart Rate</h4>
+                                </div>
+                                <span class="vital-trend-badge" id="trendHr">▬ Stable</span>
+                            </div>
+                            <div class="card-reading">
+                                <span class="reading-num" id="valHeartRate">78</span>
+                                <span class="reading-unit">BPM</span>
+                            </div>
+                            <div class="card-bottom">
+                                <div class="baseline-ref">
+                                    <span class="ref-label">Baseline:</span>
+                                    <span class="ref-value" id="baseHr">70–85</span>
+                                </div>
+                                <span class="vital-status-pill badge-normal" id="statusHr">Normal</span>
+                            </div>
+                        </article>
+
+                        <!-- 2. Blood Oxygen (SpO2) -->
+                        <article class="vital-card card-glass" id="cardSpo2">
+                            <div class="card-top">
+                                <div class="vital-icon-title">
+                                    <span class="vital-glyph glyph-spo2">🫁</span>
+                                    <h4 class="vital-title">SpO2</h4>
+                                </div>
+                                <span class="vital-trend-badge" id="trendSpo2">▬ Stable</span>
+                            </div>
+                            <div class="card-reading">
+                                <span class="reading-num" id="valSpo2">98.0</span>
+                                <span class="reading-unit">%</span>
+                            </div>
+                            <div class="card-bottom">
+                                <div class="baseline-ref">
+                                    <span class="ref-label">Baseline:</span>
+                                    <span class="ref-value" id="baseSpo2">96–99%</span>
+                                </div>
+                                <span class="vital-status-pill badge-normal" id="statusSpo2">Normal</span>
+                            </div>
+                        </article>
+
+                        <!-- 3. Core Temperature -->
+                        <article class="vital-card card-glass" id="cardTemp">
+                            <div class="card-top">
+                                <div class="vital-icon-title">
+                                    <span class="vital-glyph glyph-temp">🌡️</span>
+                                    <h4 class="vital-title">Temperature</h4>
+                                </div>
+                                <span class="vital-trend-badge" id="trendTemp">▬ Stable</span>
+                            </div>
+                            <div class="card-reading">
+                                <span class="reading-num" id="valTemp">36.8</span>
+                                <span class="reading-unit">°C</span>
+                            </div>
+                            <div class="card-bottom">
+                                <div class="baseline-ref">
+                                    <span class="ref-label">Baseline:</span>
+                                    <span class="ref-value" id="baseTemp">36.5–37.2°C</span>
+                                </div>
+                                <span class="vital-status-pill badge-normal" id="statusTemp">Normal</span>
+                            </div>
+                        </article>
+
+                        <!-- 4. Blood Pressure -->
+                        <article class="vital-card card-glass" id="cardBp">
+                            <div class="card-top">
+                                <div class="vital-icon-title">
+                                    <span class="vital-glyph glyph-bp">🩺</span>
+                                    <h4 class="vital-title">Blood Pressure</h4>
+                                </div>
+                                <span class="vital-trend-badge" id="trendBp">▬ Stable</span>
+                            </div>
+                            <div class="card-reading">
+                                <span class="reading-num bp-reading" id="valBp">120/80</span>
+                                <span class="reading-unit">mmHg</span>
+                            </div>
+                            <div class="card-bottom">
+                                <div class="baseline-ref">
+                                    <span class="ref-label">Baseline:</span>
+                                    <span class="ref-value" id="baseBp">115–125/75–82</span>
+                                </div>
+                                <span class="vital-status-pill badge-normal" id="statusBp">Normal</span>
+                            </div>
+                        </article>
+                    </section>
+
+                    <!-- AI Intelligence & Risk Overview Section -->
+                    <section class="ai-overview-grid">
+
+                        <!-- Large Visual AI Risk Score Gauge -->
+                        <div class="risk-score-card card-glass" id="riskPanel">
+                            <div class="panel-header">
+                                <div class="panel-title-wrap">
+                                    <span class="panel-tag">INTELLIGENT RISK ENGINE</span>
+                                    <h4 class="panel-title">AI Composite Risk Score</h4>
+                                </div>
+                                <span class="info-badge" title="Dynamic 0-100 explainable score calculated across deviations, trends & correlations">Explainable</span>
+                            </div>
+
+                            <div class="gauge-centerpiece">
+                                <div class="svg-ring-container">
+                                    <svg class="risk-gauge-svg" viewBox="0 0 160 160">
+                                        <circle class="gauge-bg" cx="80" cy="80" r="68"></circle>
+                                        <circle class="gauge-progress" id="gaugeProgressRing" cx="80" cy="80" r="68"></circle>
+                                    </svg>
+                                    <div class="gauge-value-overlay">
+                                        <div class="gauge-number" id="riskScoreNumber">12</div>
+                                        <div class="gauge-denom">/ 100</div>
+                                    </div>
+                                </div>
+
+                                <div class="risk-verdict-box">
+                                    <span class="verdict-label">EVALUATION STATUS</span>
+                                    <div class="verdict-pill status-normal" id="riskStatusPill">
+                                        <span class="verdict-icon" id="verdictIcon">🟢</span>
+                                        <span class="verdict-text" id="riskStatusText">NORMAL</span>
+                                    </div>
+                                    <div class="verdict-scales">
+                                        <span class="scale-item scale-green active">0–24 Normal</span>
+                                        <span class="scale-item scale-yellow">25–59 Warning</span>
+                                        <span class="scale-item scale-red">60–100 Critical</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="risk-panel-footer">
+                                <span class="micro-note">Evaluated in real time using patient-specific baselines and correlation patterns.</span>
+                            </div>
+                        </div>
+
+                        <!-- Explainable AI Analysis & Multi-Vital Correlation -->
+                        <div class="ai-explanation-card card-glass" id="aiExplanationCard">
+                            <div class="panel-header">
+                                <div class="panel-title-wrap">
+                                    <span class="panel-tag">TRANSPARENT REASONING</span>
+                                    <h4 class="panel-title">🤖 AI Analysis & Diagnostic Insights</h4>
+                                </div>
+                                <span class="correlation-status-badge badge-normal" id="correlationStatusBadge">Single Parameter Stable</span>
+                            </div>
+
+                            <!-- Multi-Vital Correlation Highlight Alert (Visible if multiple deviations) -->
+                            <div class="correlation-banner hidden" id="correlationBanner">
+                                <div class="banner-icon">⚡</div>
+                                <div class="banner-body">
+                                    <strong class="banner-title">Multi-Vital Correlation Detected</strong>
+                                    <p class="banner-text" id="correlationBannerText">
+                                        Multiple vital parameters are deviating from the patient's recent baseline simultaneously.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Bulleted Explanations -->
+                            <div class="ai-reasons-list-wrap">
+                                <h5 class="reasons-heading">Clinical Factor Attribution:</h5>
+                                <ul class="reasons-list" id="aiReasonsList">
+                                    <li><span class="reason-dot">🟢</span> All vital signs are steady within the patient's personal baseline range.</li>
+                                    <li><span class="reason-dot">🟢</span> No adverse physiological trend or cross-vital correlation detected.</li>
+                                </ul>
+                            </div>
+
+                            <div class="ai-explanation-disclaimer">
+                                <span class="disc-icon">🔎</span>
+                                <span>Risk assessment is based on simulated vital trends and patient-specific baseline comparison.</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Live Trend Charts (Chart.js) -->
+                    <section class="charts-section card-glass" aria-label="Physiological Trend Graphs">
+                        <div class="charts-header">
+                            <div class="charts-title-wrap">
+                                <span class="charts-tag">TELEMETRY STREAM</span>
+                                <h4 class="charts-title">Real-Time Physiological Trajectory (Last 20 Readings)</h4>
+                            </div>
+                            <div class="chart-legend-custom">
+                                <span class="legend-item"><span class="legend-box box-hr"></span> Heart Rate</span>
+                                <span class="legend-item"><span class="legend-box box-spo2"></span> SpO2</span>
+                                <span class="legend-item"><span class="legend-box box-temp"></span> Temperature</span>
+                            </div>
+                        </div>
+
+                        <div class="charts-grid">
+                            <div class="chart-wrapper">
+                                <div class="chart-title-bar">
+                                    <span class="chart-label">Heart Rate (BPM)</span>
+                                    <span class="chart-safe-range" id="chartHrRange">Safe: 70–85 BPM</span>
+                                </div>
+                                <div class="canvas-container">
+                                    <canvas id="chartHeartRate"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-wrapper">
+                                <div class="chart-title-bar">
+                                    <span class="chart-label">Blood Oxygen SpO2 (%)</span>
+                                    <span class="chart-safe-range" id="chartSpo2Range">Safe: 96–99%</span>
+                                </div>
+                                <div class="canvas-container">
+                                    <canvas id="chartSpo2"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-wrapper">
+                                <div class="chart-title-bar">
+                                    <span class="chart-label">Core Temperature (°C)</span>
+                                    <span class="chart-safe-range" id="chartTempRange">Safe: 36.5–37.2°C</span>
+                                </div>
+                                <div class="canvas-container">
+                                    <canvas id="chartTemp"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ============================================== -->
+                    <!-- 🏥 HOSPITAL EHR INTEGRATION SECTION -->
+                    <!-- ============================================== -->
+                    <section class="ehr-card card-glass" id="ehrIntegrationCard" aria-label="Hospital EHR Integration">
+                        <div class="ehr-card-header">
+                            <div class="ehr-header-left">
+                                <span class="ehr-tag">CLINICAL INTEROPERABILITY MODULE</span>
+                                <h3 class="ehr-title">🏥 HOSPITAL EHR INTEGRATION</h3>
+                            </div>
+                            <div class="ehr-conn-status" id="ehrConnectionStatusBadge">
+                                <span class="conn-dot pulse-green"></span>
+                                <span class="conn-label">Connection Status:</span>
+                                <strong class="conn-val text-normal">🟢 Connected</strong>
+                            </div>
+                        </div>
+
+                        <div class="ehr-body-grid">
+                            <!-- Left: Hospital & Patient Details -->
+                            <div class="ehr-detail-box">
+                                <div class="ehr-field-group">
+                                    <span class="ehr-field-label">Hospital System:</span>
+                                    <span class="ehr-field-value font-semibold text-accent" id="ehrHospitalName">VitalCare Hospital – Demo EHR</span>
+                                </div>
+                                <div class="ehr-field-group">
+                                    <span class="ehr-field-label">Patient:</span>
+                                    <span class="ehr-field-value" id="ehrPatientNameDisplay">David Kumar</span>
+                                </div>
+                                <div class="ehr-field-group">
+                                    <span class="ehr-field-label">Patient ID:</span>
+                                    <span class="ehr-id-pill" id="ehrPatientIdDisplay">VG-1026</span>
+                                </div>
+                                <div class="ehr-field-group">
+                                    <span class="ehr-field-label">Last Sync:</span>
+                                    <span class="ehr-field-value ehr-timestamp" id="ehrLastSyncDisplay">22:45:46</span>
+                                </div>
+                            </div>
+
+                            <!-- Right: Last Synchronized Vitals & Controls -->
+                            <div class="ehr-vitals-box">
+                                <div class="ehr-vitals-header">
+                                    <h5 class="ehr-vitals-title">Last Synchronized Vitals:</h5>
+                                    <span class="ehr-sync-badge" id="ehrSyncStateBadge">Committed</span>
+                                </div>
+                                <div class="ehr-vitals-chips-grid">
+                                    <div class="ehr-vital-chip">
+                                        <span class="chip-glyph">❤️</span>
+                                        <span class="chip-metric">HR: <strong id="ehrLastHr">67</strong> BPM</span>
+                                    </div>
+                                    <div class="ehr-vital-chip">
+                                        <span class="chip-glyph">🫁</span>
+                                        <span class="chip-metric">SpO2: <strong id="ehrLastSpo2">97.8</strong>%</span>
+                                    </div>
+                                    <div class="ehr-vital-chip">
+                                        <span class="chip-glyph">🌡️</span>
+                                        <span class="chip-metric">Temperature: <strong id="ehrLastTemp">37.0</strong>°C</span>
+                                    </div>
+                                    <div class="ehr-vital-chip">
+                                        <span class="chip-glyph">🩺</span>
+                                        <span class="chip-metric">BP: <strong id="ehrLastBp">127/84</strong> mmHg</span>
+                                    </div>
+                                    <div class="ehr-vital-chip ehr-vital-chip-risk">
+                                        <span class="chip-metric">Risk Score: <strong id="ehrLastRisk">5 – NORMAL</strong></span>
+                                    </div>
+                                </div>
+
+                                <div class="ehr-actions-bar">
+                                    <button class="btn btn-ehr-sync" id="btnSyncEhr" title="Collect current patient vitals and synchronize to Demo EHR">
+                                        <span class="ehr-btn-icon" id="ehrSyncIcon">🔄</span>
+                                        <span id="ehrSyncText">Sync to EHR</span>
+                                    </button>
+                                    <button class="btn btn-ehr-view" id="btnViewEhrRecords" title="View historical synchronized records and FHIR R4 JSON">
+                                        📜 View EHR Records
+                                    </button>
+                                </div>
+
+                                <div class="ehr-sync-alert hidden" id="ehrSyncFeedback">
+                                    <span class="ehr-alert-icon">✅</span>
+                                    <span class="ehr-alert-text">Successfully synchronized with Demo EHR</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Dataflow Architecture Diagram -->
+                        <div class="ehr-diagram-panel">
+                            <span class="diagram-tag">DATA INTEGRATION PIPELINE</span>
+                            <div class="diagram-nodes-track">
+                                <div class="diagram-node">
+                                    <div class="node-icon-box">👤</div>
+                                    <span class="node-label">Patient Sensors / Simulator</span>
+                                </div>
+                                <div class="diagram-arrow">➔</div>
+                                <div class="diagram-node">
+                                    <div class="node-icon-box">📡</div>
+                                    <span class="node-label">ESP32 / IoT</span>
+                                </div>
+                                <div class="diagram-arrow">➔</div>
+                                <div class="diagram-node node-active">
+                                    <div class="node-icon-box">🛡️</div>
+                                    <span class="node-label">VitalGuard Backend</span>
+                                </div>
+                                <div class="diagram-arrow">➔</div>
+                                <div class="diagram-node">
+                                    <div class="node-icon-box">🔒</div>
+                                    <span class="node-label">Secure API</span>
+                                </div>
+                                <div class="diagram-arrow">➔</div>
+                                <div class="diagram-node node-hospital">
+                                    <div class="node-icon-box">🏥</div>
+                                    <span class="node-label">Hospital EHR</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medical Prototype Disclaimer -->
+                        <div class="ehr-prototype-disclaimer">
+                            <span class="disclaimer-icon">⚠️</span>
+                            <div class="disclaimer-copy">
+                                <strong>HACKATHON PROTOTYPE:</strong>
+                                <span>“This EHR integration uses simulated data and a mock hospital system for demonstration purposes. It is not intended for real clinical use.”</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Split Bottom: Alert Feed & Quick Audit Log -->
+                    <div class="dashboard-split-bottom">
+
+                        <!-- Alert Center Quick Widget -->
+                        <section class="alerts-summary-card card-glass" aria-label="Recent Alerts">
+                            <div class="panel-header">
+                                <div class="panel-title-wrap">
+                                    <span class="panel-tag">EVENT LOG</span>
+                                    <h4 class="panel-title">🚨 Recent Clinical Alerts</h4>
+                                </div>
+                                <button class="btn-text-action" id="btnViewAllAlerts">View All</button>
+                            </div>
+                            <div class="alerts-feed-container" id="dashboardAlertsFeed">
+                                <div class="empty-feed-placeholder">
+                                    <span>✅ No critical alerts active. Patient parameters nominal.</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Vital History Mini Table -->
+                        <section class="history-summary-card card-glass" aria-label="Recent Vital Readings">
+                            <div class="panel-header">
+                                <div class="panel-title-wrap">
+                                    <span class="panel-tag">AUDIT LOG</span>
+                                    <h4 class="panel-title">📜 Recent Vital Records</h4>
+                                </div>
+                                <button class="btn-text-action" id="btnViewAllHistory">Open Full History</button>
+                            </div>
+                            <div class="table-responsive-mini">
+                                <table class="history-table" id="dashboardMiniTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>HR</th>
+                                            <th>SpO2</th>
+                                            <th>Temp</th>
+                                            <th>BP</th>
+                                            <th>Risk</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="miniTableBody">
+                                        <!-- Dynamically Populated -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                </div>
+
+                <!-- ============================================== -->
+                <!-- SECTION: PATIENTS DIRECTORY -->
+                <!-- ============================================== -->
+                <div class="view-section" id="section-patients">
+                    <section class="card-glass content-panel">
+                        <div class="panel-header roster-panel-header">
+                            <div>
+                                <span class="panel-tag">PATIENT ROSTER</span>
+                                <h3 class="panel-title">Simulated Patient Profiles &amp; Personalized Baselines</h3>
+                            </div>
+                            <div class="roster-header-actions">
+                                <span class="patient-note">Distinct physiological baseline per patient</span>
+                                <button class="btn btn-action btn-add-patient-primary" id="btnOpenAddPatientModal">
+                                    <span>➕</span> Add New Patient
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="patients-roster-grid" id="patientsRosterGrid">
+                            <!-- Populated via script.js -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- SECTION: LIVE MONITORING FOCUS -->
+                <!-- ============================================== -->
+                <div class="view-section" id="section-monitoring">
+                    <section class="card-glass content-panel">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-tag">HIGH-FREQUENCY TELEMETRY</span>
+                                <h3 class="panel-title">Dedicated Physiological Telemetry Monitor</h3>
+                            </div>
+                            <div class="telemetry-speed-status">
+                                <span class="pulse-cyan"></span>
+                                <span>High Sensitivity Live Stream</span>
+                            </div>
+                        </div>
+
+                        <div class="monitoring-layout">
+                            <div class="monitoring-focus-cards">
+                                <div class="big-metric-card" id="monCardHr">
+                                    <span class="big-label">HEART RATE</span>
+                                    <div class="big-val-wrap"><span class="big-num" id="monValHr">78</span> <span class="big-unit">BPM</span></div>
+                                    <span class="big-meta" id="monMetaHr">Baseline 70–85</span>
+                                </div>
+                                <div class="big-metric-card" id="monCardSpo2">
+                                    <span class="big-label">BLOOD OXYGEN (SPO2)</span>
+                                    <div class="big-val-wrap"><span class="big-num" id="monValSpo2">98.0</span> <span class="big-unit">%</span></div>
+                                    <span class="big-meta" id="monMetaSpo2">Baseline 96–99%</span>
+                                </div>
+                                <div class="big-metric-card" id="monCardTemp">
+                                    <span class="big-label">TEMPERATURE</span>
+                                    <div class="big-val-wrap"><span class="big-num" id="monValTemp">36.8</span> <span class="big-unit">°C</span></div>
+                                    <span class="big-meta" id="monMetaTemp">Baseline 36.5–37.2°C</span>
+                                </div>
+                                <div class="big-metric-card" id="monCardBp">
+                                    <span class="big-label">BLOOD PRESSURE</span>
+                                    <div class="big-val-wrap"><span class="big-num" id="monValBp">120/80</span> <span class="big-unit">mmHg</span></div>
+                                    <span class="big-meta" id="monMetaBp">Baseline 115–125/75–82</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- SECTION: VITAL HISTORY TABLE -->
+                <!-- ============================================== -->
+                <div class="view-section" id="section-history">
+                    <section class="card-glass content-panel">
+                        <div class="panel-header table-header-bar">
+                            <div>
+                                <span class="panel-tag">AUDIT TRAIL & LOGS</span>
+                                <h3 class="panel-title">Patient Vital History</h3>
+                            </div>
+                            
+                            <div class="history-controls">
+                                <div class="filter-group" role="group" aria-label="Status Filters">
+                                    <button class="filter-btn active" data-filter="ALL">All</button>
+                                    <button class="filter-btn" data-filter="NORMAL">Normal</button>
+                                    <button class="filter-btn" data-filter="WARNING">Warning</button>
+                                    <button class="filter-btn" data-filter="CRITICAL">Critical</button>
+                                </div>
+                                <button class="btn-action" id="btnExportCsv">
+                                    <span>📥</span> Export CSV
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="history-table full-table" id="fullHistoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Patient ID</th>
+                                        <th>Heart Rate (BPM)</th>
+                                        <th>SpO2 (%)</th>
+                                        <th>Temp (°C)</th>
+                                        <th>Blood Pressure</th>
+                                        <th>Risk Score</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fullHistoryTableBody">
+                                    <!-- Populated via script.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- SECTION: AI ANALYSIS DEEP DIVE -->
+                <!-- ============================================== -->
+                <div class="view-section" id="section-analysis">
+                    <section class="card-glass content-panel">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-tag">EXPLAINABLE LOGIC ENGINE</span>
+                                <h3 class="panel-title">Multi-Factor Risk Assessment Engine</h3>
+                            </div>
+                            <span class="ai-active-pill">Deterministic & Transparent</span>
+                        </div>
+
+                        <div class="analysis-explanation-grid">
+                            <div class="analysis-doc-card">
+                                <h4>1. Personalized Baseline Comparison</h4>
+                                <p>Generic clinical thresholds often miss subtle patient-specific deterioration. VitalGuard AI evaluates each vital against the individual patient's personal baseline range, calculating deviations proportional to distance from target.</p>
+                            </div>
+                            <div class="analysis-doc-card">
+                                <h4>2. Dynamic Trend Analysis</h4>
+                                <p>Analyzes historical trajectories over sliding 5-reading windows to identify steady rises, drops, or volatility (e.g. rising heart rate coupled with progressive desaturation) before single thresholds are breached.</p>
+                            </div>
+                            <div class="analysis-doc-card">
+                                <h4>3. Multi-Vital Correlation Matrix</h4>
+                                <p>Acute physiological distress rarely affects a single parameter. If tachycardia occurs alongside hypoxia and elevated temperature, a compounding cross-vital correlation penalty is triggered with clear clinical attribution.</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- SECTION: ALERT CENTER -->
+                <!-- ============================================== -->
+                <div class="view-section" id="section-alerts">
+                    <section class="card-glass content-panel">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-tag">CENTRALIZED ALARM SYSTEM</span>
+                                <h3 class="panel-title">Alert Center</h3>
+                            </div>
+                            <button class="btn-action" id="btnClearAlerts">Clear Display</button>
+                        </div>
+
+                        <div class="alerts-full-feed" id="alertsFullFeed">
+                            <!-- Populated via script.js -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- SECTION: HOSPITAL EHR INTEGRATION (FULL VIEW) -->
+                <!-- ============================================== -->
+                <div class="view-section" id="section-ehr">
+                    <section class="card-glass content-panel">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-tag">HOSPITAL INTEROPERABILITY REPOSITORY</span>
+                                <h3 class="panel-title">🏥 Hospital EHR Integration & FHIR Hub</h3>
+                            </div>
+                            <div class="ehr-panel-actions">
+                                <button class="btn btn-ehr-sync" id="btnSyncEhrFull">
+                                    <span>🔄</span> Sync Current Vitals
+                                </button>
+                                <button class="btn btn-ehr-view" id="btnViewEhrRecordsFull">
+                                    <span>📜</span> View Audit & FHIR
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="ehr-fullview-grid">
+                            <!-- Left: Hospital Summary Card -->
+                            <div class="ehr-summary-card card-inner">
+                                <div class="ehr-summary-status">
+                                    <span class="conn-dot pulse-green"></span>
+                                    <span class="status-title">VitalCare Hospital – Demo EHR</span>
+                                    <span class="badge-normal">🟢 Connected</span>
+                                </div>
+                                <div class="ehr-summary-details">
+                                    <div class="summary-line">
+                                        <span class="line-k">Active Patient:</span>
+                                        <strong class="line-v" id="ehrFullPatientName">David Kumar</strong>
+                                    </div>
+                                    <div class="summary-line">
+                                        <span class="line-k">Patient ID:</span>
+                                        <span class="ehr-id-pill" id="ehrFullPatientId">VG-1026</span>
+                                    </div>
+                                    <div class="summary-line">
+                                        <span class="line-k">Last Synchronized:</span>
+                                        <strong class="line-v ehr-timestamp" id="ehrFullLastSync">22:45:46</strong>
+                                    </div>
+                                    <div class="summary-line">
+                                        <span class="line-k">Gateway Protocol:</span>
+                                        <span class="line-v">HL7 FHIR R4 (Demonstration)</span>
+                                    </div>
+                                    <div class="summary-line">
+                                        <span class="line-k">Security Token:</span>
+                                        <span class="line-v font-mono text-accent">Bearer ****************</span>
+                                    </div>
+                                </div>
+                                <div class="ehr-vitals-summary-box">
+                                    <h5>Last Synchronized Parameters:</h5>
+                                    <div class="ehr-vitals-chips-grid">
+                                        <div class="ehr-vital-chip">❤️ HR: <strong id="ehrFullLastHr">67</strong> BPM</div>
+                                        <div class="ehr-vital-chip">🫁 SpO2: <strong id="ehrFullLastSpo2">97.8</strong>%</div>
+                                        <div class="ehr-vital-chip">🌡️ Temp: <strong id="ehrFullLastTemp">37.0</strong>°C</div>
+                                        <div class="ehr-vital-chip">🩺 BP: <strong id="ehrFullLastBp">127/84</strong> mmHg</div>
+                                        <div class="ehr-vital-chip ehr-vital-chip-risk">Risk: <strong id="ehrFullLastRisk">5 – NORMAL</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Architecture & Security Overview -->
+                            <div class="ehr-diagram-card card-inner">
+                                <h4 class="card-inner-title">🔗 Integration Architecture & Data Flow</h4>
+                                <div class="diagram-flow-vertical">
+                                    <div class="flow-step-v">
+                                        <span class="v-icon">👤</span>
+                                        <div class="v-text"><strong>Patient Sensors / Simulator</strong><span>Brownian-drift simulated physiological telemetry</span></div>
+                                    </div>
+                                    <div class="flow-arrow-v">⬇</div>
+                                    <div class="flow-step-v">
+                                        <span class="v-icon">📡</span>
+                                        <div class="v-text"><strong>ESP32 / IoT Gateway</strong><span>Wireless MQTT / HTTP telemetry transport</span></div>
+                                    </div>
+                                    <div class="flow-arrow-v">⬇</div>
+                                    <div class="flow-step-v step-highlight">
+                                        <span class="v-icon">🛡️</span>
+                                        <div class="v-text"><strong>VitalGuard Backend</strong><span>Explainable AI Risk Engine & Baseline Comparator</span></div>
+                                    </div>
+                                    <div class="flow-arrow-v">⬇</div>
+                                    <div class="flow-step-v">
+                                        <span class="v-icon">🔒</span>
+                                        <div class="v-text"><strong>Secure API (Token Auth)</strong><span>Bearer token authorization, payload verification & audit trail</span></div>
+                                    </div>
+                                    <div class="flow-arrow-v">⬇</div>
+                                    <div class="flow-step-v step-hospital">
+                                        <span class="v-icon">🏥</span>
+                                        <div class="v-text"><strong>Hospital EHR (VitalCare)</strong><span>Mock clinical electronic health record & FHIR Observation store</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prototype Disclaimer -->
+                        <div class="ehr-prototype-disclaimer">
+                            <span class="disclaimer-icon">⚠️</span>
+                            <div class="disclaimer-copy">
+                                <strong>HACKATHON PROTOTYPE:</strong>
+                                <span>“This EHR integration uses simulated data and a mock hospital system for demonstration purposes. It is not intended for real clinical use.”</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+            </main>
+
+            <!-- Bottom Persistent Medical Disclaimer -->
+            <footer class="app-footer">
+                <div class="disclaimer-banner">
+                    <span class="disc-icon">⚠️</span>
+                    <span class="disc-text">
+                        <strong>HACKATHON SIMULATION PROTOTYPE:</strong> VitalGuard AI is an educational demonstration prototype. It does not diagnose diseases or replace professional clinical judgment. All telemetry is simulated.
+                    </span>
+                </div>
+            </footer>
+
+        </div>
+    </div>
+
+    <!-- Architecture & Future Scope Modal -->
+    <div class="modal-overlay hidden" id="architectureModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card card-glass">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="panel-tag">HACKATHON ARCHITECTURE & ROADMAP</span>
+                    <h3 class="modal-title" id="modalTitle">VitalGuard AI – Technical Overview</h3>
+                </div>
+                <button class="modal-close" id="btnCloseModal" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-block">
+                    <h4>🏗️ Zero-Cost Hackathon Architecture</h4>
+                    <p>Designed for ₹0 cost, 100% offline demonstrability, and rapid 24-hour evaluation:</p>
+                    <ul>
+                        <li><strong>Backend:</strong> Python Flask lightweight microservice with SQLite database.</li>
+                        <li><strong>AI Risk Engine:</strong> Deterministic explainable multi-factor engine comparing personal baselines, multi-vital correlations, and rolling trends.</li>
+                        <li><strong>Frontend:</strong> Modern responsive dark healthcare dashboard with Chart.js visualization.</li>
+                    </ul>
+                </div>
+
+                <div class="modal-block">
+                    <h4>🚀 Future Scope & Hardware Integration</h4>
+                    <p>Planned production capabilities beyond hackathon simulation:</p>
+                    <ul>
+                        <li><strong>ESP32 Microcontroller:</strong> Direct IoT WiFi/MQTT telemetry streaming.</li>
+                        <li><strong>MAX30102 Optical Sensor:</strong> Real optical photoplethysmography (PPG) for Heart Rate and SpO2.</li>
+                        <li><strong>Medical Temperature Sensor:</strong> High-precision contact thermistor integration.</li>
+                        <li><strong>Bluetooth LE Wearable:</strong> Continuous ambulatory patient monitoring wristband.</li>
+                        <li><strong>Hospital EHR Integration:</strong> HL7 / FHIR protocol compliance and secure patient authentication.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action" id="btnCloseModalBtn">Close Overview</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EHR Records & FHIR Resource Viewer Modal -->
+    <div class="modal-overlay hidden" id="ehrRecordsModal" role="dialog" aria-modal="true" aria-labelledby="ehrModalTitle">
+        <div class="modal-card card-glass modal-lg">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="panel-tag">HOSPITAL EHR AUDIT & FHIR VIEWER</span>
+                    <h3 class="modal-title" id="ehrModalTitle">🏥 VitalCare Hospital – EHR Records & FHIR Repository</h3>
+                </div>
+                <button class="modal-close" id="btnCloseEhrModal" aria-label="Close modal">&times;</button>
+            </div>
+
+            <div class="modal-tabs-nav">
+                <button class="modal-tab-btn active" data-tab="ehrTabRecords" id="tabBtnRecords">Synchronized Vitals</button>
+                <button class="modal-tab-btn" data-tab="ehrTabFhir" id="tabBtnFhir">FHIR R4 Observation JSON</button>
+                <button class="modal-tab-btn" data-tab="ehrTabAudit" id="tabBtnAudit">Security Audit Log</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Tab 1: Synchronized Records Table -->
+                <div class="modal-tab-panel active" id="ehrTabRecords">
+                    <div class="table-scroll-container">
+                        <table class="ehr-records-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Patient</th>
+                                    <th>Heart Rate</th>
+                                    <th>SpO2</th>
+                                    <th>Temp</th>
+                                    <th>BP</th>
+                                    <th>Risk</th>
+                                    <th>Status</th>
+                                    <th>Synced By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ehrRecordsTableBody">
+                                <!-- Populated dynamically via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: FHIR R4 JSON Viewer -->
+                <div class="modal-tab-panel" id="ehrTabFhir">
+                    <div class="fhir-toolbar">
+                        <span class="fhir-info-chip">Standards: LOINC HR (8867-4), SpO2 (2708-6), Temp (8310-5), BP (85354-9)</span>
+                        <button class="btn btn-sm btn-action" id="btnCopyFhirJson">📋 Copy FHIR JSON</button>
+                    </div>
+                    <pre class="fhir-code-box" id="ehrFhirJsonDisplay"><code>Loading FHIR Resource Bundle...</code></pre>
+                </div>
+
+                <!-- Tab 3: Audit Trail -->
+                <div class="modal-tab-panel" id="ehrTabAudit">
+                    <div class="audit-log-terminal" id="ehrAuditTerminal">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <span class="modal-note">⚠️ Demonstration FHIR structure based on HL7 Observation concepts. Zero paid APIs required.</span>
+                <button class="btn-action" id="btnCloseEhrModalFooter">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register New Patient Modal -->
+    <div class="modal-overlay hidden" id="addPatientModal" role="dialog" aria-modal="true" aria-labelledby="addPatientModalTitle">
+        <div class="modal-card card-glass modal-md">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="panel-tag">SIMULATED PATIENT ONBOARDING</span>
+                    <h3 class="modal-title" id="addPatientModalTitle">➕ Register New Patient Profile</h3>
+                </div>
+                <button class="modal-close" id="btnCloseAddPatientModal" aria-label="Close modal">&times;</button>
+            </div>
+
+            <form id="addPatientForm" novalidate>
+                <div class="modal-body">
+                    <!-- Quick Preset Selectors -->
+                    <div class="form-preset-bar">
+                        <span class="preset-label">⚡ Quick Presets:</span>
+                        <div class="preset-chips">
+                            <button type="button" class="preset-chip active" data-preset="normal">Normal Adult</button>
+                            <button type="button" class="preset-chip" data-preset="athlete">Endurance Athlete</button>
+                            <button type="button" class="preset-chip" data-preset="hypertensive">Hypertensive Risk</button>
+                            <button type="button" class="preset-chip" data-preset="pediatric">Pediatric / Child</button>
+                        </div>
+                    </div>
+
+                    <!-- Basic Demographics Grid -->
+                    <div class="form-section-title">👤 Patient Demographics</div>
+                    <div class="form-row-grid three-col">
+                        <div class="form-group col-span-2">
+                            <label for="newPatientName" class="form-label">Full Name <span class="required-star">*</span></label>
+                            <input type="text" id="newPatientName" class="form-input" placeholder="e.g. Dr. Priya Sharma" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPatientAge" class="form-label">Age <span class="required-star">*</span></label>
+                            <input type="number" id="newPatientAge" class="form-input" placeholder="e.g. 42" min="1" max="120" value="42" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row-grid two-col">
+                        <div class="form-group">
+                            <label for="newPatientGender" class="form-label">Gender</label>
+                            <select id="newPatientGender" class="form-select">
+                                <option value="Male">Male</option>
+                                <option value="Female" selected>Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPatientNotes" class="form-label">Ward / Bed / Clinical Notes</label>
+                            <input type="text" id="newPatientNotes" class="form-input" placeholder="e.g. ICU Bed 4 — Post-op monitoring">
+                        </div>
+                    </div>
+
+                    <!-- Personalized Baseline Ranges -->
+                    <div class="form-section-title">
+                        <span>🎯 Personalized AI Physiological Baselines</span>
+                        <span class="section-hint">AI compares live telemetry against these custom ranges</span>
+                    </div>
+
+                    <div class="baseline-inputs-grid">
+                        <!-- Heart Rate -->
+                        <div class="baseline-input-card">
+                            <div class="input-card-header">
+                                <span class="input-icon">❤️</span>
+                                <div>
+                                    <div class="input-card-title">Heart Rate</div>
+                                    <div class="input-card-unit">BPM</div>
+                                </div>
+                            </div>
+                            <div class="min-max-inputs">
+                                <div class="bound-col">
+                                    <label for="baseHrMin" class="sub-label">Min</label>
+                                    <input type="number" id="baseHrMin" class="form-input num-input" value="65" min="30" max="200" required>
+                                </div>
+                                <span class="range-dash">–</span>
+                                <div class="bound-col">
+                                    <label for="baseHrMax" class="sub-label">Max</label>
+                                    <input type="number" id="baseHrMax" class="form-input num-input" value="82" min="30" max="220" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SpO2 -->
+                        <div class="baseline-input-card">
+                            <div class="input-card-header">
+                                <span class="input-icon">🫁</span>
+                                <div>
+                                    <div class="input-card-title">Blood Oxygen (SpO2)</div>
+                                    <div class="input-card-unit">%</div>
+                                </div>
+                            </div>
+                            <div class="min-max-inputs">
+                                <div class="bound-col">
+                                    <label for="baseSpo2Min" class="sub-label">Min</label>
+                                    <input type="number" id="baseSpo2Min" class="form-input num-input" value="96" min="70" max="100" required>
+                                </div>
+                                <span class="range-dash">–</span>
+                                <div class="bound-col">
+                                    <label for="baseSpo2Max" class="sub-label">Max</label>
+                                    <input type="number" id="baseSpo2Max" class="form-input num-input" value="99" min="70" max="100" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Temperature -->
+                        <div class="baseline-input-card">
+                            <div class="input-card-header">
+                                <span class="input-icon">🌡️</span>
+                                <div>
+                                    <div class="input-card-title">Temperature</div>
+                                    <div class="input-card-unit">°C</div>
+                                </div>
+                            </div>
+                            <div class="min-max-inputs">
+                                <div class="bound-col">
+                                    <label for="baseTempMin" class="sub-label">Min</label>
+                                    <input type="number" id="baseTempMin" class="form-input num-input" value="36.5" step="0.1" min="34" max="42" required>
+                                </div>
+                                <span class="range-dash">–</span>
+                                <div class="bound-col">
+                                    <label for="baseTempMax" class="sub-label">Max</label>
+                                    <input type="number" id="baseTempMax" class="form-input num-input" value="37.2" step="0.1" min="34" max="43" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blood Pressure -->
+                        <div class="baseline-input-card">
+                            <div class="input-card-header">
+                                <span class="input-icon">🩺</span>
+                                <div>
+                                    <div class="input-card-title">Blood Pressure</div>
+                                    <div class="input-card-unit">Sys / Dia (mmHg)</div>
+                                </div>
+                            </div>
+                            <div class="bp-inputs-quad">
+                                <div class="bp-pair">
+                                    <span class="bp-pair-label">Systolic</span>
+                                    <div class="bp-pair-fields">
+                                        <input type="number" id="baseSysMin" class="form-input num-input-sm" value="115" min="60" max="230" required title="Systolic Min">
+                                        <span>–</span>
+                                        <input type="number" id="baseSysMax" class="form-input num-input-sm" value="125" min="70" max="240" required title="Systolic Max">
+                                    </div>
+                                </div>
+                                <div class="bp-pair">
+                                    <span class="bp-pair-label">Diastolic</span>
+                                    <div class="bp-pair-fields">
+                                        <input type="number" id="baseDiaMin" class="form-input num-input-sm" value="75" min="40" max="150" required title="Diastolic Min">
+                                        <span>–</span>
+                                        <input type="number" id="baseDiaMax" class="form-input num-input-sm" value="82" min="45" max="160" required title="Diastolic Max">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="addPatientError" class="form-error-msg hidden"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-action" id="btnCancelAddPatient">Cancel</button>
+                    <button type="submit" class="btn btn-action btn-add-patient-primary" id="btnSubmitAddPatient">
+                        <span>🚀</span> Register &amp; Start Monitoring
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Patient Modal -->
+    <div class="modal-overlay hidden" id="editPatientModal" role="dialog" aria-modal="true" aria-labelledby="editPatientModalTitle">
+        <div class="modal-card card-glass modal-md">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="panel-tag">PATIENT PROFILE RECONFIGURATION</span>
+                    <h3 class="modal-title" id="editPatientModalTitle">✏️ Edit Patient Details &amp; Baselines</h3>
+                </div>
+                <button class="modal-close" id="btnCloseEditPatientModal" aria-label="Close modal">&times;</button>
+            </div>
+
+            <form id="editPatientForm" novalidate>
+                <input type="hidden" id="editPatientId" value="">
+                <div class="modal-body">
+                    <!-- Quick Presets -->
+                    <div class="form-preset-bar">
+                        <span class="preset-label">⚡ Apply Preset:</span>
+                        <div class="preset-chips">
+                            <button type="button" class="preset-chip edit-preset-chip" data-preset="normal">Normal Adult</button>
+                            <button type="button" class="preset-chip edit-preset-chip" data-preset="athlete">Endurance Athlete</button>
+                            <button type="button" class="preset-chip edit-preset-chip" data-preset="hypertensive">Hypertensive Risk</button>
+                            <button type="button" class="preset-chip edit-preset-chip" data-preset="pediatric">Pediatric / Child</button>
+                        </div>
+                    </div>
+
+                    <!-- Basic Demographics Grid -->
+                    <div class="form-section-title">👤 Patient Information</div>
+                    <div class="form-row-grid three-col">
+                        <div class="form-group col-span-2">
+                            <label for="editPatientName" class="form-label">Full Name <span class="required-star">*</span></label>
+                            <input type="text" id="editPatientName" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPatientAge" class="form-label">Age <span class="required-star">*</span></label>
+                            <input type="number" id="editPatientAge" class="form-input" min="1" max="120" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row-grid two-col">
+                        <div class="form-group">
+                            <label for="editPatientGender" class="form-label">Gender</label>
+                            <select id="editPatientGender" class="form-select">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPatientNotes" class="form-label">Ward / Bed / Clinical Notes</label>
+                            <input type="text" id="editPatientNotes" class="form-input">
+                        </div>
+                    </div>
+
+                    <!-- Personalized Baseline Ranges -->
+                    <div class="form-section-title">
+                        <span>🎯 Personal Physiological Baselines</span>
+                        <span class="section-hint">AI risk model compares live telemetry against these thresholds</span>
+                    </div>
+
+                    <div class="baseline-inputs-grid">
+                        <!-- Heart Rate -->
+                        <div class="baseline-input-card">
+                            <div class="input-card-header">
+                                <span class="input-icon">❤️</span>
+                                <div>
+                                    <div class="input-card-title">Heart Rate</div>
+                                    <div class="input-card-unit">BPM</div>
+                                </div>
+                            </div>
+                            <div class="min-max-inputs">
+                                <div class="bound-col">
+                                    <label for="editBaseHrMin" class="sub-label">Min</label>
+                                    <input type="number" id="editBaseHrMin" class="form-input num-input" min="30" max="200" required>
+                                </div>
+                                <span class="range-dash">–</span>
+                                <div class="bound-col">
+                                    <label for="editBaseHrMax" class="sub-label">Max</label>
+                                    <input type="number" id="editBaseHrMax" class="form-input num-input" min="30" max="220" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SpO2 -->
+                        <div class="baseline-input-card">
+                            <div class="input-card-header">
+                                <span class="input-icon">🫁</span>
+                                <div>
+                                    <div class="input-card-title">Blood Oxygen (SpO2)</div>
+                                    <div class="input-card-unit">%</div>
+                                </div>
+                            </div>
+                            <div class="min-max-inputs">
+                                <div class="bound-col">
+                                    <label for="editBaseSpo2Min" class="sub-label">Min</label>
+                                    <input type="number" id="editBaseSpo2Min" class="form-input num-input" min="70" max="100" required>
+                                </div>
+                                <span class="range-dash">–</span>
+                                <div class="bound-col">
+                                    <label for="editBaseSpo2Max" class="sub-label">Max</label>
+                                    <input type="number" id="editBaseSpo2Max" class="form-input num-input" min="70" max="100" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Temperature -->
+                        <div class="baseline-input-card">
+                            <div class="input-card-header">
+                                <span class="input-icon">🌡️</span>
+                                <div>
+                                    <div class="input-card-title">Temperature</div>
+                                    <div class="input-card-unit">°C</div>
+                                </div>
+                            </div>
+                            <div class="min-max-inputs">
+                                <div class="bound-col">
+                                    <label for="editBaseTempMin" class="sub-label">Min</label>
+                                    <input type="number" id="editBaseTempMin" class="form-input num-input" step="0.1" min="34" max="42" required>
+                                </div>
+                                <span class="range-dash">–</span>
+                                <div class="bound-col">
+                                    <label for="editBaseTempMax" class="sub-label">Max</label>
+                                    <input type="number" id="editBaseTempMax" class="form-input num-input" step="0.1" min="34" max="43" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blood Pressure -->
+                        <div class="baseline-input-card">
+                            <div class="input-card-header">
+                                <span class="input-icon">🩺</span>
+                                <div>
+                                    <div class="input-card-title">Blood Pressure</div>
+                                    <div class="input-card-unit">Sys / Dia (mmHg)</div>
+                                </div>
+                            </div>
+                            <div class="bp-inputs-quad">
+                                <div class="bp-pair">
+                                    <span class="bp-pair-label">Systolic</span>
+                                    <div class="bp-pair-fields">
+                                        <input type="number" id="editBaseSysMin" class="form-input num-input-sm" min="60" max="230" required>
+                                        <span>–</span>
+                                        <input type="number" id="editBaseSysMax" class="form-input num-input-sm" min="70" max="240" required>
+                                    </div>
+                                </div>
+                                <div class="bp-pair">
+                                    <span class="bp-pair-label">Diastolic</span>
+                                    <div class="bp-pair-fields">
+                                        <input type="number" id="editBaseDiaMin" class="form-input num-input-sm" min="40" max="150" required>
+                                        <span>–</span>
+                                        <input type="number" id="editBaseDiaMax" class="form-input num-input-sm" min="45" max="160" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="editPatientError" class="form-error-msg hidden"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-action" id="btnCancelEditPatient">Cancel</button>
+                    <button type="submit" class="btn btn-action btn-add-patient-primary" id="btnSubmitEditPatient">
+                        <span>💾</span> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay hidden" id="deleteConfirmModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+        <div class="modal-card card-glass modal-sm">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="panel-tag" style="color: #ef4444;">DANGER ZONE</span>
+                    <h3 class="modal-title" id="deleteModalTitle" style="color: #fca5a5;">🗑️ Delete Patient Record</h3>
+                </div>
+                <button class="modal-close" id="btnCloseDeleteModal" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 12px; color: var(--text-primary);">
+                    Are you sure you want to delete patient <strong id="deletePatientNameDisplay" style="color: #38bdf8;">--</strong> (<span id="deletePatientIdDisplay" style="font-family: monospace;">--</span>)?
+                </p>
+                <div class="form-error-msg" style="margin: 0; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3);">
+                    ⚠️ <strong>Warning:</strong> This will permanently delete this patient's telemetry stream, vital history, alerts, and EHR audit records. This action cannot be undone.
+                </div>
+                <div id="deletePatientError" class="form-error-msg hidden" style="margin-top: 10px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-action" id="btnCancelDeletePatient">Cancel</button>
+                <button type="button" class="btn btn-danger-glow" id="btnConfirmDeletePatient">
+                    <span>🗑️</span> Yes, Delete Patient
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
