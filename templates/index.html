@@ -63,71 +63,30 @@
                 <div class="login-card-header">
                     <div class="login-badge-pill">
                         <span class="status-dot-active"></span>
-                        <span>CLINICIAN SECURE ACCESS</span>
+                        <span>🔒 HIGH-SECURITY CLINICAL GATEWAY</span>
                     </div>
-                    <h2 class="login-heading">Hospital Staff Sign-In</h2>
-                    <p class="login-subtext">Authenticate to monitor real-time physiological telemetry and EHR records.</p>
+                    <h2 class="login-heading">Clinician Authentication</h2>
+                    <p class="login-subtext">Enter your authorized Clinician ID and security password to access live telemetry workstations.</p>
                 </div>
 
-                <!-- 1-Click Fast Hackathon Demo Presets -->
-                <div class="demo-logins-section">
-                    <div class="demo-section-label">
-                        <span>⚡ 1-Click Demo Login (Hackathon Presets):</span>
-                    </div>
-                    <div class="demo-roles-grid">
-                        <button type="button" class="btn-demo-role" data-preset="kowreesh">
-                            <span class="role-icon">👨‍⚕️</span>
-                            <div class="role-meta">
-                                <strong class="role-name">Dr. Kowreesh, MD</strong>
-                                <span class="role-dept">Lead Clinical Director</span>
-                            </div>
-                        </button>
-                        <button type="button" class="btn-demo-role" data-preset="dr_arun">
-                            <span class="role-icon">🩺</span>
-                            <div class="role-meta">
-                                <strong class="role-name">Dr. Arun Kumar, MD</strong>
-                                <span class="role-dept">Cardiology Lead</span>
-                            </div>
-                        </button>
-                        <button type="button" class="btn-demo-role" data-preset="nurse_priya">
-                            <span class="role-icon">👩‍⚕️</span>
-                            <div class="role-meta">
-                                <strong class="role-name">Nurse Priya, RN</strong>
-                                <span class="role-dept">ICU Specialist</span>
-                            </div>
-                        </button>
-                        <button type="button" class="btn-demo-role" data-preset="dr_rajesh">
-                            <span class="role-icon">🚨</span>
-                            <div class="role-meta">
-                                <strong class="role-name">Dr. Rajesh V, MD</strong>
-                                <span class="role-dept">Emergency Care</span>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="login-divider-or">
-                    <span>OR ENTER CLINICIAN CREDENTIALS</span>
-                </div>
-
-                <!-- Custom Credentials Form -->
+                <!-- Custom Credentials Form (Strict ID + Password Required) -->
                 <form id="clinicalLoginForm" class="login-form" novalidate>
                     <div class="form-group">
-                        <label for="loginUsername" class="form-label">Clinician Username / ID</label>
+                        <label for="loginUsername" class="form-label">Clinician ID / Username</label>
                         <div class="input-with-icon">
                             <span class="input-prefix-icon">👤</span>
-                            <input type="text" id="loginUsername" class="form-input" placeholder="e.g. kowreesh or dr_arun" autocomplete="username" required>
+                            <input type="text" id="loginUsername" class="form-input" placeholder="Enter Clinician ID (e.g. kowreesh)" autocomplete="username" required autofocus>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <div class="label-row-between">
                             <label for="loginPassword" class="form-label">Security Password</label>
-                            <span class="demo-pwd-hint">Login: <code>kowreesh</code> / <code>kowreesh18</code></span>
+                            <span class="demo-pwd-hint">Protected Portal</span>
                         </div>
                         <div class="input-with-icon">
                             <span class="input-prefix-icon">🔒</span>
-                            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••••••" autocomplete="current-password" required>
+                            <input type="password" id="loginPassword" class="form-input" placeholder="Enter security password" autocomplete="current-password" required>
                             <button type="button" class="btn-toggle-pwd" id="btnToggleLoginPwd" title="Show/Hide Password">👁️</button>
                         </div>
                     </div>
@@ -136,13 +95,13 @@
 
                     <button type="submit" class="btn-login-submit" id="btnLoginSubmit">
                         <span class="btn-login-icon">🔐</span>
-                        <span>Sign In to Clinical Station</span>
+                        <span>Authenticate &amp; Enter Station</span>
                     </button>
                 </form>
 
                 <div class="login-footer-disclaimer">
                     <span class="disc-icon">🛡️</span>
-                    <span>VitalCare Hospital Telemetry Network • Zero-Cost Hackathon Prototype Simulation</span>
+                    <span>VitalCare Clinical Telemetry Network • Cryptographic PBKDF2/SHA-256 Protected</span>
                 </div>
             </div>
         </div>

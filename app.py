@@ -8,18 +8,31 @@ import json
 import sqlite3
 import datetime
 from flask import Flask, render_template, request, jsonify, session
+from werkzeug.security import generate_password_hash, check_password_hash
 from ai.risk_engine import VitalRiskEngine
 
 # Initialize Flask App
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'vitalguard-clinical-secret-key-2026')
+
+# Enhanced Session Security
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(hours=8)
+
 DB_PATH = os.path.join(os.path.dirname(__file__), 'database.db')
 
-# Verified Demo Clinicians (Zero Paid Auth / Hackathon Ready)
+# Rate Limiter & Brute-Force Protection
+# Key: client_ip -> {"count": int, "locked_until": datetime.datetime}
+LOGIN_ATTEMPTS = {}
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_DURATION_SECONDS = 60
+
+# Verified Clinicians with Cryptographic Password Hashing (Werkzeug PBKDF2/SHA256)
 CLINICIANS = {
     'kowreesh': {
         'username': 'kowreesh',
-        'password': 'kowreesh18',
+        'password_hash': generate_password_hash('kowreesh18'),
         'name': 'Dr. Kowreesh, MD',
         'role': 'Lead Clinical Director',
         'department': 'Critical Care & Telemetry Systems',
@@ -28,7 +41,7 @@ CLINICIANS = {
     },
     'dr_arun': {
         'username': 'dr_arun',
-        'password': 'password123',
+        'password_hash': generate_password_hash('password123'),
         'name': 'Dr. Arun Kumar, MD',
         'role': 'Chief of Cardiology',
         'department': 'Cardiology & Intensive Care',
@@ -37,7 +50,7 @@ CLINICIANS = {
     },
     'nurse_priya': {
         'username': 'nurse_priya',
-        'password': 'password123',
+        'password_hash': generate_password_hash('password123'),
         'name': 'Staff Nurse Priya, RN',
         'role': 'Senior ICU Care Specialist',
         'department': 'Intensive Care Unit (ICU)',
@@ -46,7 +59,7 @@ CLINICIANS = {
     },
     'dr_rajesh': {
         'username': 'dr_rajesh',
-        'password': 'password123',
+        'password_hash': generate_password_hash('password123'),
         'name': 'Dr. Rajesh V, MD',
         'role': 'Emergency Care Director',
         'department': 'Emergency Medicine & Trauma',
@@ -55,7 +68,7 @@ CLINICIANS = {
     },
     'admin': {
         'username': 'admin',
-        'password': 'password123',
+        'password_hash': generate_password_hash('admin123'),
         'name': 'Dr. Meena Iyer, MD',
         'role': 'Chief Medical Officer',
         'department': 'Hospital Administration',
@@ -486,58 +499,71 @@ def get_demo_clinicians():
 
 @app.route('/api/auth/login', methods=['POST'])
 def auth_login():
-    """Handles clinician login via credentials or 1-click quick preset roles."""
+    """
+    High-Security Clinician Authentication Gateway.
+    Strictly requires valid Clinician ID and cryptographic password verification.
+    Includes brute-force attack rate limiting and temporary IP lockout.
+    """
     data = request.get_json() or {}
-    role_preset = data.get('preset')
+    client_ip = (request.headers.get('X-Forwarded-For') or request.remote_addr or '127.0.0.1').split(',')[0].strip()
 
-    # 1-Click Demo Login
-    if role_preset and role_preset in CLINICIANS:
-        user = CLINICIANS[role_preset]
-        session['user'] = user
-        return jsonify({
-            "status": "success",
-            "message": f"Welcome, {user['name']}",
-            "user": user
-        })
+    now = datetime.datetime.now()
+    attempt_info = LOGIN_ATTEMPTS.get(client_ip)
+    if attempt_info and attempt_info.get('locked_until'):
+        if now < attempt_info['locked_until']:
+            wait_sec = int((attempt_info['locked_until'] - now).total_seconds()) + 1
+            return jsonify({
+                "status": "error",
+                "message": f"Security Alert: Terminal locked due to repeated failed attempts. Please wait {wait_sec}s."
+            }), 429
+        else:
+            # Cooldown expired: reset
+            LOGIN_ATTEMPTS.pop(client_ip, None)
 
     username = str(data.get('username', '')).strip().lower()
     password = str(data.get('password', '')).strip()
 
-    # Pre-registered Clinician Check
-    user = CLINICIANS.get(username)
-    if user:
-        if user['password'] == password or password == 'vitalguard':
-            session['user'] = user
-            return jsonify({
-                "status": "success",
-                "message": f"Welcome, {user['name']}",
-                "user": user
-            })
-        return jsonify({"status": "error", "message": "Incorrect password for registered clinician."}), 401
+    # Enforce mandatory credentials
+    if not username or not password:
+        return jsonify({
+            "status": "error",
+            "message": "Security Error: Both Clinician ID and Password must be entered."
+        }), 400
 
-    # Hackathon flexible login: If judge/tester types any name and password
-    if username and len(password) >= 3:
-        custom_user = {
-            'username': username,
-            'name': f"Dr. {username.title()}",
-            'role': 'Attending Clinician',
-            'department': 'Emergency & Inpatient Care',
-            'station': 'Mobile Clinical Terminal Alpha',
-            'avatar': username[:2].upper()
-        }
-        session['user'] = custom_user
+    # Cryptographic Password Verification
+    user = CLINICIANS.get(username)
+    if user and check_password_hash(user['password_hash'], password):
+        LOGIN_ATTEMPTS.pop(client_ip, None)
+        session.clear()
+        safe_user = {k: v for k, v in user.items() if k != 'password_hash'}
+        session['user'] = safe_user
+        session.permanent = True
         return jsonify({
             "status": "success",
-            "message": f"Welcome, {custom_user['name']}",
-            "user": custom_user
+            "message": f"Access Granted. Welcome, {safe_user['name']}",
+            "user": safe_user
         })
 
-    return jsonify({"status": "error", "message": "Invalid username or password (minimum 3 characters required)."}), 401
+    # Failed Attempt Tracking & Progressive Lockout
+    record = LOGIN_ATTEMPTS.setdefault(client_ip, {"count": 0, "locked_until": None})
+    record["count"] += 1
+    if record["count"] >= MAX_FAILED_ATTEMPTS:
+        record["locked_until"] = now + datetime.timedelta(seconds=LOCKOUT_DURATION_SECONDS)
+        return jsonify({
+            "status": "error",
+            "message": f"Security Lockout: {MAX_FAILED_ATTEMPTS} failed attempts reached. Terminal locked for {LOCKOUT_DURATION_SECONDS} seconds."
+        }), 429
+
+    remaining = MAX_FAILED_ATTEMPTS - record["count"]
+    return jsonify({
+        "status": "error",
+        "message": f"Invalid Clinician ID or Password. ({remaining} attempt{'s' if remaining != 1 else ''} remaining)."
+    }), 401
 
 @app.route('/api/auth/logout', methods=['POST'])
 def auth_logout():
-    """Clears clinician session."""
-    session.pop('user', None)
+    """Clears clinician session securely."""
+    session.clear()
     return jsonify({"status": "success", "message": "Successfully logged out from clinical terminal."})
 
 @app.route('/api/auth/me', methods=['GET'])

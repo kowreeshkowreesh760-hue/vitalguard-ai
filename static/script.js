@@ -127,56 +127,6 @@ function initAppWithSession() {
     }
 }
 
-function loginWithPreset(presetKey) {
-    const errorEl = document.getElementById('loginErrorMessage');
-    if (errorEl) {
-        errorEl.textContent = '';
-        errorEl.classList.add('hidden');
-    }
-
-    const btns = document.querySelectorAll('.btn-demo-role');
-    btns.forEach(b => b.classList.remove('active'));
-    const activeBtn = document.querySelector(`.btn-demo-role[data-preset="${presetKey}"]`);
-    if (activeBtn) activeBtn.classList.add('active');
-
-    fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preset: presetKey })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.status === 'success' && data.user) {
-            AppState.currentUser = data.user;
-            AppState.isAuthenticated = true;
-            updateClinicianDisplay(data.user);
-            showDashboard();
-            initAppWithSession();
-            showToast('Clinician Signed In', `Authenticated as ${data.user.name} (${data.user.role})`, 'NORMAL');
-        } else {
-            if (errorEl) {
-                errorEl.textContent = data.message || 'Authentication failed.';
-                errorEl.classList.remove('hidden');
-            }
-        }
-    })
-    .catch(err => {
-        console.warn('Backend login request failed, falling back to local session:', err);
-        const fallbackUsers = {
-            'kowreesh': { username: 'kowreesh', name: 'Dr. Kowreesh, MD', role: 'Lead Clinical Director', department: 'Critical Care & Telemetry Systems', station: 'Main Command Center - Bay 1', avatar: 'KW' },
-            'dr_arun': { username: 'dr_arun', name: 'Dr. Arun Kumar, MD', role: 'Cardiology Lead', department: 'Cardiology & Intensive Care', station: 'Cardiac ICU Station 1', avatar: 'AK' },
-            'nurse_priya': { username: 'nurse_priya', name: 'Nurse Priya, RN', role: 'ICU Specialist', department: 'Critical Care Unit (CCU)', station: 'Central Monitoring Desk 2', avatar: 'PR' },
-            'dr_rajesh': { username: 'dr_rajesh', name: 'Dr. Rajesh V, MD', role: 'Emergency Care', department: 'Trauma & Emergency Care', station: 'ER Trauma Bay 3', avatar: 'RV' }
-        };
-        const u = fallbackUsers[presetKey] || fallbackUsers['dr_arun'];
-        AppState.currentUser = u;
-        AppState.isAuthenticated = true;
-        updateClinicianDisplay(u);
-        showDashboard();
-        initAppWithSession();
-        showToast('Clinician Signed In', `Authenticated as ${u.name} (Demo Mode)`, 'NORMAL');
-    });
-}
 
 function handleLoginSubmit(e) {
     if (e) e.preventDefault();
@@ -610,16 +560,7 @@ function initEventListeners() {
         btnConfirmDel.addEventListener('click', handleConfirmDeletePatient);
     }
 
-    // ---- 21. Clinician Authentication & Demo Roles ----
-    // 1-Click Fast Hackathon Demo Login Presets
-    document.querySelectorAll('.btn-demo-role').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const preset = btn.getAttribute('data-preset');
-            if (preset) loginWithPreset(preset);
-        });
-    });
-
-    // Custom Credentials Form Submit
+    // ---- 21. Clinician Authentication & Secure Form Submit ----
     const loginForm = document.getElementById('clinicalLoginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLoginSubmit);
