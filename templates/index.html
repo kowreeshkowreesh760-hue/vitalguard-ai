@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VitalGuard AI – Real-Time Patient Vital Monitoring & Early-Warning System</title>
-    <meta name="description" content="AI-Powered Real-Time Patient Vital Monitoring and Early-Warning System for 24-hour hackathons. Explainable risk engine, personalized baselines, and multi-vital correlation.">
-    
+    <meta name="description"
+        content="AI-Powered Real-Time Patient Vital Monitoring and Early-Warning System for 24-hour hackathons. Explainable risk engine, personalized baselines, and multi-vital correlation.">
+
     <!-- Google Fonts for Modern Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/style.css">
 
@@ -23,6 +27,7 @@
         }
     </script>
 </head>
+
 <body class="theme-dark">
 
     <!-- Top Notification Banner for Alerts -->
@@ -141,13 +146,15 @@
                     </div>
 
                     <!-- Quick Add Patient Button in Header -->
-                    <button class="btn btn-sm btn-action btn-header-add-patient" id="btnHeaderAddPatient" title="Register New Patient">
+                    <button class="btn btn-sm btn-action btn-header-add-patient" id="btnHeaderAddPatient"
+                        title="Register New Patient">
                         <span>➕</span>
                         <span>Add Patient</span>
                     </button>
 
                     <!-- Audio Alarm Chime Toggle -->
-                    <button class="icon-button" id="btnAudioToggle" title="Toggle Alarm Sound" aria-label="Toggle Alarm Sound">
+                    <button class="icon-button" id="btnAudioToggle" title="Toggle Alarm Sound"
+                        aria-label="Toggle Alarm Sound">
                         <span id="audioIcon">🔊</span>
                     </button>
 
@@ -236,10 +243,12 @@
                                     <span class="meta-sep">•</span>
                                     <span id="patientGenderDisplay">Male</span>
                                     <span class="meta-sep">•</span>
-                                    <button class="btn-banner-action" id="btnEditActivePatient" title="Edit Current Patient Details &amp; Baselines">
+                                    <button class="btn-banner-action" id="btnEditActivePatient"
+                                        title="Edit Current Patient Details &amp; Baselines">
                                         <span>✏️</span> Edit
                                     </button>
-                                    <button class="btn-banner-action btn-banner-danger" id="btnDeleteActivePatient" title="Delete Current Patient">
+                                    <button class="btn-banner-action btn-banner-danger" id="btnDeleteActivePatient"
+                                        title="Delete Current Patient">
                                         <span>🗑️</span> Delete
                                     </button>
                                 </div>
@@ -376,14 +385,16 @@
                                     <span class="panel-tag">INTELLIGENT RISK ENGINE</span>
                                     <h4 class="panel-title">AI Composite Risk Score</h4>
                                 </div>
-                                <span class="info-badge" title="Dynamic 0-100 explainable score calculated across deviations, trends & correlations">Explainable</span>
+                                <span class="info-badge"
+                                    title="Dynamic 0-100 explainable score calculated across deviations, trends & correlations">Explainable</span>
                             </div>
 
                             <div class="gauge-centerpiece">
                                 <div class="svg-ring-container">
                                     <svg class="risk-gauge-svg" viewBox="0 0 160 160">
                                         <circle class="gauge-bg" cx="80" cy="80" r="68"></circle>
-                                        <circle class="gauge-progress" id="gaugeProgressRing" cx="80" cy="80" r="68"></circle>
+                                        <circle class="gauge-progress" id="gaugeProgressRing" cx="80" cy="80" r="68">
+                                        </circle>
                                     </svg>
                                     <div class="gauge-value-overlay">
                                         <div class="gauge-number" id="riskScoreNumber">12</div>
@@ -406,7 +417,8 @@
                             </div>
 
                             <div class="risk-panel-footer">
-                                <span class="micro-note">Evaluated in real time using patient-specific baselines and correlation patterns.</span>
+                                <span class="micro-note">Evaluated in real time using patient-specific baselines and
+                                    correlation patterns.</span>
                             </div>
                         </div>
 
@@ -417,7 +429,8 @@
                                     <span class="panel-tag">TRANSPARENT REASONING</span>
                                     <h4 class="panel-title">🤖 AI Analysis & Diagnostic Insights</h4>
                                 </div>
-                                <span class="correlation-status-badge badge-normal" id="correlationStatusBadge">Single Parameter Stable</span>
+                                <span class="correlation-status-badge badge-normal" id="correlationStatusBadge">Single
+                                    Parameter Stable</span>
                             </div>
 
                             <!-- Multi-Vital Correlation Highlight Alert (Visible if multiple deviations) -->
@@ -426,7 +439,8 @@
                                 <div class="banner-body">
                                     <strong class="banner-title">Multi-Vital Correlation Detected</strong>
                                     <p class="banner-text" id="correlationBannerText">
-                                        Multiple vital parameters are deviating from the patient's recent baseline simultaneously.
+                                        Multiple vital parameters are deviating from the patient's recent baseline
+                                        simultaneously.
                                     </p>
                                 </div>
                             </div>
@@ -435,14 +449,17 @@
                             <div class="ai-reasons-list-wrap">
                                 <h5 class="reasons-heading">Clinical Factor Attribution:</h5>
                                 <ul class="reasons-list" id="aiReasonsList">
-                                    <li><span class="reason-dot">🟢</span> All vital signs are steady within the patient's personal baseline range.</li>
-                                    <li><span class="reason-dot">🟢</span> No adverse physiological trend or cross-vital correlation detected.</li>
+                                    <li><span class="reason-dot">🟢</span> All vital signs are steady within the
+                                        patient's personal baseline range.</li>
+                                    <li><span class="reason-dot">🟢</span> No adverse physiological trend or cross-vital
+                                        correlation detected.</li>
                                 </ul>
                             </div>
 
                             <div class="ai-explanation-disclaimer">
                                 <span class="disc-icon">🔎</span>
-                                <span>Risk assessment is based on simulated vital trends and patient-specific baseline comparison.</span>
+                                <span>Risk assessment is based on simulated vital trends and patient-specific baseline
+                                    comparison.</span>
                             </div>
                         </div>
                     </section>
@@ -515,7 +532,8 @@
                             <div class="ehr-detail-box">
                                 <div class="ehr-field-group">
                                     <span class="ehr-field-label">Hospital System:</span>
-                                    <span class="ehr-field-value font-semibold text-accent" id="ehrHospitalName">VitalCare Hospital – Demo EHR</span>
+                                    <span class="ehr-field-value font-semibold text-accent"
+                                        id="ehrHospitalName">VitalCare Hospital – Demo EHR</span>
                                 </div>
                                 <div class="ehr-field-group">
                                     <span class="ehr-field-label">Patient:</span>
@@ -548,23 +566,27 @@
                                     </div>
                                     <div class="ehr-vital-chip">
                                         <span class="chip-glyph">🌡️</span>
-                                        <span class="chip-metric">Temperature: <strong id="ehrLastTemp">37.0</strong>°C</span>
+                                        <span class="chip-metric">Temperature: <strong
+                                                id="ehrLastTemp">37.0</strong>°C</span>
                                     </div>
                                     <div class="ehr-vital-chip">
                                         <span class="chip-glyph">🩺</span>
                                         <span class="chip-metric">BP: <strong id="ehrLastBp">127/84</strong> mmHg</span>
                                     </div>
                                     <div class="ehr-vital-chip ehr-vital-chip-risk">
-                                        <span class="chip-metric">Risk Score: <strong id="ehrLastRisk">5 – NORMAL</strong></span>
+                                        <span class="chip-metric">Risk Score: <strong id="ehrLastRisk">5 –
+                                                NORMAL</strong></span>
                                     </div>
                                 </div>
 
                                 <div class="ehr-actions-bar">
-                                    <button class="btn btn-ehr-sync" id="btnSyncEhr" title="Collect current patient vitals and synchronize to Demo EHR">
+                                    <button class="btn btn-ehr-sync" id="btnSyncEhr"
+                                        title="Collect current patient vitals and synchronize to Demo EHR">
                                         <span class="ehr-btn-icon" id="ehrSyncIcon">🔄</span>
                                         <span id="ehrSyncText">Sync to EHR</span>
                                     </button>
-                                    <button class="btn btn-ehr-view" id="btnViewEhrRecords" title="View historical synchronized records and FHIR R4 JSON">
+                                    <button class="btn btn-ehr-view" id="btnViewEhrRecords"
+                                        title="View historical synchronized records and FHIR R4 JSON">
                                         📜 View EHR Records
                                     </button>
                                 </div>
@@ -612,7 +634,8 @@
                             <span class="disclaimer-icon">⚠️</span>
                             <div class="disclaimer-copy">
                                 <strong>HACKATHON PROTOTYPE:</strong>
-                                <span>“This EHR integration uses simulated data and a mock hospital system for demonstration purposes. It is not intended for real clinical use.”</span>
+                                <span>“This EHR integration uses simulated data and a mock hospital system for
+                                    demonstration purposes. It is not intended for real clinical use.”</span>
                             </div>
                         </div>
                     </section>
@@ -712,22 +735,26 @@
                             <div class="monitoring-focus-cards">
                                 <div class="big-metric-card" id="monCardHr">
                                     <span class="big-label">HEART RATE</span>
-                                    <div class="big-val-wrap"><span class="big-num" id="monValHr">78</span> <span class="big-unit">BPM</span></div>
+                                    <div class="big-val-wrap"><span class="big-num" id="monValHr">78</span> <span
+                                            class="big-unit">BPM</span></div>
                                     <span class="big-meta" id="monMetaHr">Baseline 70–85</span>
                                 </div>
                                 <div class="big-metric-card" id="monCardSpo2">
                                     <span class="big-label">BLOOD OXYGEN (SPO2)</span>
-                                    <div class="big-val-wrap"><span class="big-num" id="monValSpo2">98.0</span> <span class="big-unit">%</span></div>
+                                    <div class="big-val-wrap"><span class="big-num" id="monValSpo2">98.0</span> <span
+                                            class="big-unit">%</span></div>
                                     <span class="big-meta" id="monMetaSpo2">Baseline 96–99%</span>
                                 </div>
                                 <div class="big-metric-card" id="monCardTemp">
                                     <span class="big-label">TEMPERATURE</span>
-                                    <div class="big-val-wrap"><span class="big-num" id="monValTemp">36.8</span> <span class="big-unit">°C</span></div>
+                                    <div class="big-val-wrap"><span class="big-num" id="monValTemp">36.8</span> <span
+                                            class="big-unit">°C</span></div>
                                     <span class="big-meta" id="monMetaTemp">Baseline 36.5–37.2°C</span>
                                 </div>
                                 <div class="big-metric-card" id="monCardBp">
                                     <span class="big-label">BLOOD PRESSURE</span>
-                                    <div class="big-val-wrap"><span class="big-num" id="monValBp">120/80</span> <span class="big-unit">mmHg</span></div>
+                                    <div class="big-val-wrap"><span class="big-num" id="monValBp">120/80</span> <span
+                                            class="big-unit">mmHg</span></div>
                                     <span class="big-meta" id="monMetaBp">Baseline 115–125/75–82</span>
                                 </div>
                             </div>
@@ -745,7 +772,7 @@
                                 <span class="panel-tag">AUDIT TRAIL & LOGS</span>
                                 <h3 class="panel-title">Patient Vital History</h3>
                             </div>
-                            
+
                             <div class="history-controls">
                                 <div class="filter-group" role="group" aria-label="Status Filters">
                                     <button class="filter-btn active" data-filter="ALL">All</button>
@@ -797,15 +824,21 @@
                         <div class="analysis-explanation-grid">
                             <div class="analysis-doc-card">
                                 <h4>1. Personalized Baseline Comparison</h4>
-                                <p>Generic clinical thresholds often miss subtle patient-specific deterioration. VitalGuard AI evaluates each vital against the individual patient's personal baseline range, calculating deviations proportional to distance from target.</p>
+                                <p>Generic clinical thresholds often miss subtle patient-specific deterioration.
+                                    VitalGuard AI evaluates each vital against the individual patient's personal
+                                    baseline range, calculating deviations proportional to distance from target.</p>
                             </div>
                             <div class="analysis-doc-card">
                                 <h4>2. Dynamic Trend Analysis</h4>
-                                <p>Analyzes historical trajectories over sliding 5-reading windows to identify steady rises, drops, or volatility (e.g. rising heart rate coupled with progressive desaturation) before single thresholds are breached.</p>
+                                <p>Analyzes historical trajectories over sliding 5-reading windows to identify steady
+                                    rises, drops, or volatility (e.g. rising heart rate coupled with progressive
+                                    desaturation) before single thresholds are breached.</p>
                             </div>
                             <div class="analysis-doc-card">
                                 <h4>3. Multi-Vital Correlation Matrix</h4>
-                                <p>Acute physiological distress rarely affects a single parameter. If tachycardia occurs alongside hypoxia and elevated temperature, a compounding cross-vital correlation penalty is triggered with clear clinical attribution.</p>
+                                <p>Acute physiological distress rarely affects a single parameter. If tachycardia occurs
+                                    alongside hypoxia and elevated temperature, a compounding cross-vital correlation
+                                    penalty is triggered with clear clinical attribution.</p>
                             </div>
                         </div>
                     </section>
@@ -883,11 +916,16 @@
                                 <div class="ehr-vitals-summary-box">
                                     <h5>Last Synchronized Parameters:</h5>
                                     <div class="ehr-vitals-chips-grid">
-                                        <div class="ehr-vital-chip">❤️ HR: <strong id="ehrFullLastHr">67</strong> BPM</div>
-                                        <div class="ehr-vital-chip">🫁 SpO2: <strong id="ehrFullLastSpo2">97.8</strong>%</div>
-                                        <div class="ehr-vital-chip">🌡️ Temp: <strong id="ehrFullLastTemp">37.0</strong>°C</div>
-                                        <div class="ehr-vital-chip">🩺 BP: <strong id="ehrFullLastBp">127/84</strong> mmHg</div>
-                                        <div class="ehr-vital-chip ehr-vital-chip-risk">Risk: <strong id="ehrFullLastRisk">5 – NORMAL</strong></div>
+                                        <div class="ehr-vital-chip">❤️ HR: <strong id="ehrFullLastHr">67</strong> BPM
+                                        </div>
+                                        <div class="ehr-vital-chip">🫁 SpO2: <strong id="ehrFullLastSpo2">97.8</strong>%
+                                        </div>
+                                        <div class="ehr-vital-chip">🌡️ Temp: <strong
+                                                id="ehrFullLastTemp">37.0</strong>°C</div>
+                                        <div class="ehr-vital-chip">🩺 BP: <strong id="ehrFullLastBp">127/84</strong>
+                                            mmHg</div>
+                                        <div class="ehr-vital-chip ehr-vital-chip-risk">Risk: <strong
+                                                id="ehrFullLastRisk">5 – NORMAL</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -898,27 +936,33 @@
                                 <div class="diagram-flow-vertical">
                                     <div class="flow-step-v">
                                         <span class="v-icon">👤</span>
-                                        <div class="v-text"><strong>Patient Sensors / Simulator</strong><span>Brownian-drift simulated physiological telemetry</span></div>
+                                        <div class="v-text"><strong>Patient Sensors /
+                                                Simulator</strong><span>Brownian-drift simulated physiological
+                                                telemetry</span></div>
                                     </div>
                                     <div class="flow-arrow-v">⬇</div>
                                     <div class="flow-step-v">
                                         <span class="v-icon">📡</span>
-                                        <div class="v-text"><strong>ESP32 / IoT Gateway</strong><span>Wireless MQTT / HTTP telemetry transport</span></div>
+                                        <div class="v-text"><strong>ESP32 / IoT Gateway</strong><span>Wireless MQTT /
+                                                HTTP telemetry transport</span></div>
                                     </div>
                                     <div class="flow-arrow-v">⬇</div>
                                     <div class="flow-step-v step-highlight">
                                         <span class="v-icon">🛡️</span>
-                                        <div class="v-text"><strong>VitalGuard Backend</strong><span>Explainable AI Risk Engine & Baseline Comparator</span></div>
+                                        <div class="v-text"><strong>VitalGuard Backend</strong><span>Explainable AI Risk
+                                                Engine & Baseline Comparator</span></div>
                                     </div>
                                     <div class="flow-arrow-v">⬇</div>
                                     <div class="flow-step-v">
                                         <span class="v-icon">🔒</span>
-                                        <div class="v-text"><strong>Secure API (Token Auth)</strong><span>Bearer token authorization, payload verification & audit trail</span></div>
+                                        <div class="v-text"><strong>Secure API (Token Auth)</strong><span>Bearer token
+                                                authorization, payload verification & audit trail</span></div>
                                     </div>
                                     <div class="flow-arrow-v">⬇</div>
                                     <div class="flow-step-v step-hospital">
                                         <span class="v-icon">🏥</span>
-                                        <div class="v-text"><strong>Hospital EHR (VitalCare)</strong><span>Mock clinical electronic health record & FHIR Observation store</span></div>
+                                        <div class="v-text"><strong>Hospital EHR (VitalCare)</strong><span>Mock clinical
+                                                electronic health record & FHIR Observation store</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -929,7 +973,8 @@
                             <span class="disclaimer-icon">⚠️</span>
                             <div class="disclaimer-copy">
                                 <strong>HACKATHON PROTOTYPE:</strong>
-                                <span>“This EHR integration uses simulated data and a mock hospital system for demonstration purposes. It is not intended for real clinical use.”</span>
+                                <span>“This EHR integration uses simulated data and a mock hospital system for
+                                    demonstration purposes. It is not intended for real clinical use.”</span>
                             </div>
                         </div>
                     </section>
@@ -942,7 +987,9 @@
                 <div class="disclaimer-banner">
                     <span class="disc-icon">⚠️</span>
                     <span class="disc-text">
-                        <strong>HACKATHON SIMULATION PROTOTYPE:</strong> VitalGuard AI is an educational demonstration prototype. It does not diagnose diseases or replace professional clinical judgment. All telemetry is simulated.
+                        <strong>HACKATHON SIMULATION PROTOTYPE:</strong> VitalGuard AI is an educational demonstration
+                        prototype. It does not diagnose diseases or replace professional clinical judgment. All
+                        telemetry is simulated.
                     </span>
                 </div>
             </footer>
@@ -951,7 +998,8 @@
     </div>
 
     <!-- Architecture & Future Scope Modal -->
-    <div class="modal-overlay hidden" id="architectureModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-overlay hidden" id="architectureModal" role="dialog" aria-modal="true"
+        aria-labelledby="modalTitle">
         <div class="modal-card card-glass">
             <div class="modal-header">
                 <div class="modal-title-group">
@@ -966,8 +1014,10 @@
                     <p>Designed for ₹0 cost, 100% offline demonstrability, and rapid 24-hour evaluation:</p>
                     <ul>
                         <li><strong>Backend:</strong> Python Flask lightweight microservice with SQLite database.</li>
-                        <li><strong>AI Risk Engine:</strong> Deterministic explainable multi-factor engine comparing personal baselines, multi-vital correlations, and rolling trends.</li>
-                        <li><strong>Frontend:</strong> Modern responsive dark healthcare dashboard with Chart.js visualization.</li>
+                        <li><strong>AI Risk Engine:</strong> Deterministic explainable multi-factor engine comparing
+                            personal baselines, multi-vital correlations, and rolling trends.</li>
+                        <li><strong>Frontend:</strong> Modern responsive dark healthcare dashboard with Chart.js
+                            visualization.</li>
                     </ul>
                 </div>
 
@@ -976,10 +1026,14 @@
                     <p>Planned production capabilities beyond hackathon simulation:</p>
                     <ul>
                         <li><strong>ESP32 Microcontroller:</strong> Direct IoT WiFi/MQTT telemetry streaming.</li>
-                        <li><strong>MAX30102 Optical Sensor:</strong> Real optical photoplethysmography (PPG) for Heart Rate and SpO2.</li>
-                        <li><strong>Medical Temperature Sensor:</strong> High-precision contact thermistor integration.</li>
-                        <li><strong>Bluetooth LE Wearable:</strong> Continuous ambulatory patient monitoring wristband.</li>
-                        <li><strong>Hospital EHR Integration:</strong> HL7 / FHIR protocol compliance and secure patient authentication.</li>
+                        <li><strong>MAX30102 Optical Sensor:</strong> Real optical photoplethysmography (PPG) for Heart
+                            Rate and SpO2.</li>
+                        <li><strong>Medical Temperature Sensor:</strong> High-precision contact thermistor integration.
+                        </li>
+                        <li><strong>Bluetooth LE Wearable:</strong> Continuous ambulatory patient monitoring wristband.
+                        </li>
+                        <li><strong>Hospital EHR Integration:</strong> HL7 / FHIR protocol compliance and secure patient
+                            authentication.</li>
                     </ul>
                 </div>
             </div>
@@ -990,18 +1044,21 @@
     </div>
 
     <!-- EHR Records & FHIR Resource Viewer Modal -->
-    <div class="modal-overlay hidden" id="ehrRecordsModal" role="dialog" aria-modal="true" aria-labelledby="ehrModalTitle">
+    <div class="modal-overlay hidden" id="ehrRecordsModal" role="dialog" aria-modal="true"
+        aria-labelledby="ehrModalTitle">
         <div class="modal-card card-glass modal-lg">
             <div class="modal-header">
                 <div class="modal-title-group">
                     <span class="panel-tag">HOSPITAL EHR AUDIT & FHIR VIEWER</span>
-                    <h3 class="modal-title" id="ehrModalTitle">🏥 VitalCare Hospital – EHR Records & FHIR Repository</h3>
+                    <h3 class="modal-title" id="ehrModalTitle">🏥 VitalCare Hospital – EHR Records & FHIR Repository
+                    </h3>
                 </div>
                 <button class="modal-close" id="btnCloseEhrModal" aria-label="Close modal">&times;</button>
             </div>
 
             <div class="modal-tabs-nav">
-                <button class="modal-tab-btn active" data-tab="ehrTabRecords" id="tabBtnRecords">Synchronized Vitals</button>
+                <button class="modal-tab-btn active" data-tab="ehrTabRecords" id="tabBtnRecords">Synchronized
+                    Vitals</button>
                 <button class="modal-tab-btn" data-tab="ehrTabFhir" id="tabBtnFhir">FHIR R4 Observation JSON</button>
                 <button class="modal-tab-btn" data-tab="ehrTabAudit" id="tabBtnAudit">Security Audit Log</button>
             </div>
@@ -1034,10 +1091,12 @@
                 <!-- Tab 2: FHIR R4 JSON Viewer -->
                 <div class="modal-tab-panel" id="ehrTabFhir">
                     <div class="fhir-toolbar">
-                        <span class="fhir-info-chip">Standards: LOINC HR (8867-4), SpO2 (2708-6), Temp (8310-5), BP (85354-9)</span>
+                        <span class="fhir-info-chip">Standards: LOINC HR (8867-4), SpO2 (2708-6), Temp (8310-5), BP
+                            (85354-9)</span>
                         <button class="btn btn-sm btn-action" id="btnCopyFhirJson">📋 Copy FHIR JSON</button>
                     </div>
-                    <pre class="fhir-code-box" id="ehrFhirJsonDisplay"><code>Loading FHIR Resource Bundle...</code></pre>
+                    <pre class="fhir-code-box"
+                        id="ehrFhirJsonDisplay"><code>Loading FHIR Resource Bundle...</code></pre>
                 </div>
 
                 <!-- Tab 3: Audit Trail -->
@@ -1049,14 +1108,16 @@
             </div>
 
             <div class="modal-footer">
-                <span class="modal-note">⚠️ Demonstration FHIR structure based on HL7 Observation concepts. Zero paid APIs required.</span>
+                <span class="modal-note">⚠️ Demonstration FHIR structure based on HL7 Observation concepts. Zero paid
+                    APIs required.</span>
                 <button class="btn-action" id="btnCloseEhrModalFooter">Close</button>
             </div>
         </div>
     </div>
 
     <!-- Register New Patient Modal -->
-    <div class="modal-overlay hidden" id="addPatientModal" role="dialog" aria-modal="true" aria-labelledby="addPatientModalTitle">
+    <div class="modal-overlay hidden" id="addPatientModal" role="dialog" aria-modal="true"
+        aria-labelledby="addPatientModalTitle">
         <div class="modal-card card-glass modal-md">
             <div class="modal-header">
                 <div class="modal-title-group">
@@ -1074,7 +1135,8 @@
                         <div class="preset-chips">
                             <button type="button" class="preset-chip active" data-preset="normal">Normal Adult</button>
                             <button type="button" class="preset-chip" data-preset="athlete">Endurance Athlete</button>
-                            <button type="button" class="preset-chip" data-preset="hypertensive">Hypertensive Risk</button>
+                            <button type="button" class="preset-chip" data-preset="hypertensive">Hypertensive
+                                Risk</button>
                             <button type="button" class="preset-chip" data-preset="pediatric">Pediatric / Child</button>
                         </div>
                     </div>
@@ -1083,12 +1145,16 @@
                     <div class="form-section-title">👤 Patient Demographics</div>
                     <div class="form-row-grid three-col">
                         <div class="form-group col-span-2">
-                            <label for="newPatientName" class="form-label">Full Name <span class="required-star">*</span></label>
-                            <input type="text" id="newPatientName" class="form-input" placeholder="e.g. Dr. Priya Sharma" required>
+                            <label for="newPatientName" class="form-label">Full Name <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="newPatientName" class="form-input"
+                                placeholder="e.g. Dr. Priya Sharma" required>
                         </div>
                         <div class="form-group">
-                            <label for="newPatientAge" class="form-label">Age <span class="required-star">*</span></label>
-                            <input type="number" id="newPatientAge" class="form-input" placeholder="e.g. 42" min="1" max="120" value="42" required>
+                            <label for="newPatientAge" class="form-label">Age <span
+                                    class="required-star">*</span></label>
+                            <input type="number" id="newPatientAge" class="form-input" placeholder="e.g. 42" min="1"
+                                max="120" value="42" required>
                         </div>
                     </div>
 
@@ -1103,7 +1169,8 @@
                         </div>
                         <div class="form-group">
                             <label for="newPatientNotes" class="form-label">Ward / Bed / Clinical Notes</label>
-                            <input type="text" id="newPatientNotes" class="form-input" placeholder="e.g. ICU Bed 4 — Post-op monitoring">
+                            <input type="text" id="newPatientNotes" class="form-input"
+                                placeholder="e.g. ICU Bed 4 — Post-op monitoring">
                         </div>
                     </div>
 
@@ -1126,12 +1193,14 @@
                             <div class="min-max-inputs">
                                 <div class="bound-col">
                                     <label for="baseHrMin" class="sub-label">Min</label>
-                                    <input type="number" id="baseHrMin" class="form-input num-input" value="65" min="30" max="200" required>
+                                    <input type="number" id="baseHrMin" class="form-input num-input" value="65" min="30"
+                                        max="200" required>
                                 </div>
                                 <span class="range-dash">–</span>
                                 <div class="bound-col">
                                     <label for="baseHrMax" class="sub-label">Max</label>
-                                    <input type="number" id="baseHrMax" class="form-input num-input" value="82" min="30" max="220" required>
+                                    <input type="number" id="baseHrMax" class="form-input num-input" value="82" min="30"
+                                        max="220" required>
                                 </div>
                             </div>
                         </div>
@@ -1148,12 +1217,14 @@
                             <div class="min-max-inputs">
                                 <div class="bound-col">
                                     <label for="baseSpo2Min" class="sub-label">Min</label>
-                                    <input type="number" id="baseSpo2Min" class="form-input num-input" value="96" min="70" max="100" required>
+                                    <input type="number" id="baseSpo2Min" class="form-input num-input" value="96"
+                                        min="70" max="100" required>
                                 </div>
                                 <span class="range-dash">–</span>
                                 <div class="bound-col">
                                     <label for="baseSpo2Max" class="sub-label">Max</label>
-                                    <input type="number" id="baseSpo2Max" class="form-input num-input" value="99" min="70" max="100" required>
+                                    <input type="number" id="baseSpo2Max" class="form-input num-input" value="99"
+                                        min="70" max="100" required>
                                 </div>
                             </div>
                         </div>
@@ -1170,12 +1241,14 @@
                             <div class="min-max-inputs">
                                 <div class="bound-col">
                                     <label for="baseTempMin" class="sub-label">Min</label>
-                                    <input type="number" id="baseTempMin" class="form-input num-input" value="36.5" step="0.1" min="34" max="42" required>
+                                    <input type="number" id="baseTempMin" class="form-input num-input" value="36.5"
+                                        step="0.1" min="34" max="42" required>
                                 </div>
                                 <span class="range-dash">–</span>
                                 <div class="bound-col">
                                     <label for="baseTempMax" class="sub-label">Max</label>
-                                    <input type="number" id="baseTempMax" class="form-input num-input" value="37.2" step="0.1" min="34" max="43" required>
+                                    <input type="number" id="baseTempMax" class="form-input num-input" value="37.2"
+                                        step="0.1" min="34" max="43" required>
                                 </div>
                             </div>
                         </div>
@@ -1193,17 +1266,21 @@
                                 <div class="bp-pair">
                                     <span class="bp-pair-label">Systolic</span>
                                     <div class="bp-pair-fields">
-                                        <input type="number" id="baseSysMin" class="form-input num-input-sm" value="115" min="60" max="230" required title="Systolic Min">
+                                        <input type="number" id="baseSysMin" class="form-input num-input-sm" value="115"
+                                            min="60" max="230" required title="Systolic Min">
                                         <span>–</span>
-                                        <input type="number" id="baseSysMax" class="form-input num-input-sm" value="125" min="70" max="240" required title="Systolic Max">
+                                        <input type="number" id="baseSysMax" class="form-input num-input-sm" value="125"
+                                            min="70" max="240" required title="Systolic Max">
                                     </div>
                                 </div>
                                 <div class="bp-pair">
                                     <span class="bp-pair-label">Diastolic</span>
                                     <div class="bp-pair-fields">
-                                        <input type="number" id="baseDiaMin" class="form-input num-input-sm" value="75" min="40" max="150" required title="Diastolic Min">
+                                        <input type="number" id="baseDiaMin" class="form-input num-input-sm" value="75"
+                                            min="40" max="150" required title="Diastolic Min">
                                         <span>–</span>
-                                        <input type="number" id="baseDiaMax" class="form-input num-input-sm" value="82" min="45" max="160" required title="Diastolic Max">
+                                        <input type="number" id="baseDiaMax" class="form-input num-input-sm" value="82"
+                                            min="45" max="160" required title="Diastolic Max">
                                     </div>
                                 </div>
                             </div>
@@ -1224,7 +1301,8 @@
     </div>
 
     <!-- Edit Patient Modal -->
-    <div class="modal-overlay hidden" id="editPatientModal" role="dialog" aria-modal="true" aria-labelledby="editPatientModalTitle">
+    <div class="modal-overlay hidden" id="editPatientModal" role="dialog" aria-modal="true"
+        aria-labelledby="editPatientModalTitle">
         <div class="modal-card card-glass modal-md">
             <div class="modal-header">
                 <div class="modal-title-group">
@@ -1241,10 +1319,14 @@
                     <div class="form-preset-bar">
                         <span class="preset-label">⚡ Apply Preset:</span>
                         <div class="preset-chips">
-                            <button type="button" class="preset-chip edit-preset-chip" data-preset="normal">Normal Adult</button>
-                            <button type="button" class="preset-chip edit-preset-chip" data-preset="athlete">Endurance Athlete</button>
-                            <button type="button" class="preset-chip edit-preset-chip" data-preset="hypertensive">Hypertensive Risk</button>
-                            <button type="button" class="preset-chip edit-preset-chip" data-preset="pediatric">Pediatric / Child</button>
+                            <button type="button" class="preset-chip edit-preset-chip" data-preset="normal">Normal
+                                Adult</button>
+                            <button type="button" class="preset-chip edit-preset-chip" data-preset="athlete">Endurance
+                                Athlete</button>
+                            <button type="button" class="preset-chip edit-preset-chip"
+                                data-preset="hypertensive">Hypertensive Risk</button>
+                            <button type="button" class="preset-chip edit-preset-chip" data-preset="pediatric">Pediatric
+                                / Child</button>
                         </div>
                     </div>
 
@@ -1252,11 +1334,13 @@
                     <div class="form-section-title">👤 Patient Information</div>
                     <div class="form-row-grid three-col">
                         <div class="form-group col-span-2">
-                            <label for="editPatientName" class="form-label">Full Name <span class="required-star">*</span></label>
+                            <label for="editPatientName" class="form-label">Full Name <span
+                                    class="required-star">*</span></label>
                             <input type="text" id="editPatientName" class="form-input" required>
                         </div>
                         <div class="form-group">
-                            <label for="editPatientAge" class="form-label">Age <span class="required-star">*</span></label>
+                            <label for="editPatientAge" class="form-label">Age <span
+                                    class="required-star">*</span></label>
                             <input type="number" id="editPatientAge" class="form-input" min="1" max="120" required>
                         </div>
                     </div>
@@ -1295,12 +1379,14 @@
                             <div class="min-max-inputs">
                                 <div class="bound-col">
                                     <label for="editBaseHrMin" class="sub-label">Min</label>
-                                    <input type="number" id="editBaseHrMin" class="form-input num-input" min="30" max="200" required>
+                                    <input type="number" id="editBaseHrMin" class="form-input num-input" min="30"
+                                        max="200" required>
                                 </div>
                                 <span class="range-dash">–</span>
                                 <div class="bound-col">
                                     <label for="editBaseHrMax" class="sub-label">Max</label>
-                                    <input type="number" id="editBaseHrMax" class="form-input num-input" min="30" max="220" required>
+                                    <input type="number" id="editBaseHrMax" class="form-input num-input" min="30"
+                                        max="220" required>
                                 </div>
                             </div>
                         </div>
@@ -1317,12 +1403,14 @@
                             <div class="min-max-inputs">
                                 <div class="bound-col">
                                     <label for="editBaseSpo2Min" class="sub-label">Min</label>
-                                    <input type="number" id="editBaseSpo2Min" class="form-input num-input" min="70" max="100" required>
+                                    <input type="number" id="editBaseSpo2Min" class="form-input num-input" min="70"
+                                        max="100" required>
                                 </div>
                                 <span class="range-dash">–</span>
                                 <div class="bound-col">
                                     <label for="editBaseSpo2Max" class="sub-label">Max</label>
-                                    <input type="number" id="editBaseSpo2Max" class="form-input num-input" min="70" max="100" required>
+                                    <input type="number" id="editBaseSpo2Max" class="form-input num-input" min="70"
+                                        max="100" required>
                                 </div>
                             </div>
                         </div>
@@ -1339,12 +1427,14 @@
                             <div class="min-max-inputs">
                                 <div class="bound-col">
                                     <label for="editBaseTempMin" class="sub-label">Min</label>
-                                    <input type="number" id="editBaseTempMin" class="form-input num-input" step="0.1" min="34" max="42" required>
+                                    <input type="number" id="editBaseTempMin" class="form-input num-input" step="0.1"
+                                        min="34" max="42" required>
                                 </div>
                                 <span class="range-dash">–</span>
                                 <div class="bound-col">
                                     <label for="editBaseTempMax" class="sub-label">Max</label>
-                                    <input type="number" id="editBaseTempMax" class="form-input num-input" step="0.1" min="34" max="43" required>
+                                    <input type="number" id="editBaseTempMax" class="form-input num-input" step="0.1"
+                                        min="34" max="43" required>
                                 </div>
                             </div>
                         </div>
@@ -1362,17 +1452,21 @@
                                 <div class="bp-pair">
                                     <span class="bp-pair-label">Systolic</span>
                                     <div class="bp-pair-fields">
-                                        <input type="number" id="editBaseSysMin" class="form-input num-input-sm" min="60" max="230" required>
+                                        <input type="number" id="editBaseSysMin" class="form-input num-input-sm"
+                                            min="60" max="230" required>
                                         <span>–</span>
-                                        <input type="number" id="editBaseSysMax" class="form-input num-input-sm" min="70" max="240" required>
+                                        <input type="number" id="editBaseSysMax" class="form-input num-input-sm"
+                                            min="70" max="240" required>
                                     </div>
                                 </div>
                                 <div class="bp-pair">
                                     <span class="bp-pair-label">Diastolic</span>
                                     <div class="bp-pair-fields">
-                                        <input type="number" id="editBaseDiaMin" class="form-input num-input-sm" min="40" max="150" required>
+                                        <input type="number" id="editBaseDiaMin" class="form-input num-input-sm"
+                                            min="40" max="150" required>
                                         <span>–</span>
-                                        <input type="number" id="editBaseDiaMax" class="form-input num-input-sm" min="45" max="160" required>
+                                        <input type="number" id="editBaseDiaMax" class="form-input num-input-sm"
+                                            min="45" max="160" required>
                                     </div>
                                 </div>
                             </div>
@@ -1393,7 +1487,8 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div class="modal-overlay hidden" id="deleteConfirmModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-overlay hidden" id="deleteConfirmModal" role="dialog" aria-modal="true"
+        aria-labelledby="deleteModalTitle">
         <div class="modal-card card-glass modal-sm">
             <div class="modal-header">
                 <div class="modal-title-group">
@@ -1404,10 +1499,14 @@
             </div>
             <div class="modal-body">
                 <p style="margin-bottom: 12px; color: var(--text-primary);">
-                    Are you sure you want to delete patient <strong id="deletePatientNameDisplay" style="color: #38bdf8;">--</strong> (<span id="deletePatientIdDisplay" style="font-family: monospace;">--</span>)?
+                    Are you sure you want to delete patient <strong id="deletePatientNameDisplay"
+                        style="color: #38bdf8;">--</strong> (<span id="deletePatientIdDisplay"
+                        style="font-family: monospace;">--</span>)?
                 </p>
-                <div class="form-error-msg" style="margin: 0; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3);">
-                    ⚠️ <strong>Warning:</strong> This will permanently delete this patient's telemetry stream, vital history, alerts, and EHR audit records. This action cannot be undone.
+                <div class="form-error-msg"
+                    style="margin: 0; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3);">
+                    ⚠️ <strong>Warning:</strong> This will permanently delete this patient's telemetry stream, vital
+                    history, alerts, and EHR audit records. This action cannot be undone.
                 </div>
                 <div id="deletePatientError" class="form-error-msg hidden" style="margin-top: 10px;"></div>
             </div>
@@ -1423,4 +1522,5 @@
     <!-- Application Logic Script -->
     <script src="/static/script.js"></script>
 </body>
+
 </html>
